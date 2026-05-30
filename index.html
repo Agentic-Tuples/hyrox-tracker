@@ -134,7 +134,15 @@ svg.chart{overflow:visible}
 .header{padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right))}
 .content{padding-bottom:max(24px,env(safe-area-inset-bottom))}
 
-/* ── Mobile responsive ──────────────────────────────────────────────────── */
+/* ── Mobile bottom nav ───────────────────────────────────────────────────── */
+#mobile-nav{display:none}
+#more-drawer{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:#fff;border-top:1px solid #c9d5e3;padding:12px 16px;
+  padding-bottom:max(12px,env(safe-area-inset-bottom));
+  display:none;flex-wrap:wrap;gap:8px;box-shadow:0 -4px 20px rgba(0,0,0,0.12)}
+#more-drawer.open{display:flex}
+
+/* ── Mobile responsive ───────────────────────────────────────────────────── */
 @media (max-width: 640px){
   /* Header */
   .header{padding:max(14px,env(safe-area-inset-top)) 14px 0}
@@ -147,10 +155,29 @@ svg.chart{overflow:visible}
   /* Plan selector row: stack button + plan name */
   #plan-selector > div{flex-direction:row;flex-wrap:wrap;gap:8px;align-items:center}
 
-  /* Tab bar: scrollable, no wrap */
-  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:2px;gap:2px}
-  .tabs::-webkit-scrollbar{display:none}
-  .tab-btn{white-space:nowrap;font-size:11px;padding:7px 11px;flex-shrink:0}
+  /* Tab bar: hidden on mobile — replaced by bottom nav */
+  .tabs{display:none}
+
+  /* Content: make room for bottom nav */
+  .content{padding-bottom:calc(70px + max(12px,env(safe-area-inset-bottom)))}
+
+  /* Bottom nav */
+  #mobile-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:100;
+    background:#fff;border-top:2px solid #c9d5e3;
+    padding:6px 4px max(8px,env(safe-area-inset-bottom));
+    justify-content:space-around;align-items:stretch;
+    box-shadow:0 -2px 12px rgba(0,0,0,0.10);
+  }
+  .mnav-btn{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    flex:1;gap:3px;padding:4px 2px;border:none;background:none;
+    font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.5px;color:#7a8ba3;cursor:pointer;
+    border-top:2px solid transparent;transition:color 0.15s;
+  }
+  .mnav-btn.active{color:#e07b3c;border-top-color:#e07b3c}
+  .mnav-icon{font-size:20px;line-height:1}
 
   /* Content area */
   .content{padding:10px}
@@ -230,6 +257,8 @@ svg.chart{overflow:visible}
 </div>
 
 <div class="content" id="content"></div>
+<div id="mobile-nav"></div>
+<div id="more-drawer" style="display:none"></div>
 
 <script>
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -299,7 +328,10 @@ let state = {
 };
 
 function today(){return new Date().toISOString().split("T")[0]}
-function chartW(full=860){return Math.min(full,Math.max(300,window.innerWidth-48))||full}
+function chartW(full=860){
+  if(window.innerWidth<=640) return Math.min(full, Math.max(280, window.innerWidth-64));
+  return full;
+}
 function fmt(s){const m=Math.floor(s/60);return m+":"+(s%60).toString().padStart(2,"0")}
 function el(tag,cls,inner){const e=document.createElement(tag);if(cls)e.className=cls;if(inner!==undefined)e.innerHTML=inner;return e}
 
@@ -352,6 +384,54 @@ function switchPlan(id){
   renderAll();
 }
 
+// Bottom nav items: [label, icon, tab]
+const MOBILE_NAV=[
+  ["Home","🏠","Dashboard"],
+  ["Plan","📋","Training Plan"],
+  ["Stations","🏋️","Stations"],
+  ["Sims","🏃","Sim Log"],
+  ["Import","☁️","Import"],
+];
+
+function renderMobileNav(){
+  const isMobile=window.innerWidth<=640;
+  const navEl=document.getElementById("mobile-nav");
+  const drawerEl=document.getElementById("more-drawer");
+  if(!navEl||!drawerEl) return;
+  if(!isMobile){navEl.style.display="none";drawerEl.className="";return;}
+
+  // Primary nav buttons
+  navEl.innerHTML="";
+  const primaryTabs=MOBILE_NAV.map(n=>n[2]);
+  MOBILE_NAV.forEach(([label,icon,tab])=>{
+    const btn=document.createElement("button");
+    btn.className="mnav-btn"+(state.tab===tab?" active":"");
+    btn.innerHTML=`<span class="mnav-icon">${icon}</span><span>${label}</span>`;
+    btn.onclick=()=>{drawerEl.className="";state.tab=tab;renderAll();};
+    navEl.appendChild(btn);
+  });
+  // "More" button
+  const moreTabs=TABS.filter(t=>!primaryTabs.includes(t));
+  const moreActive=moreTabs.includes(state.tab);
+  const moreBtn=document.createElement("button");
+  moreBtn.className="mnav-btn"+(moreActive?" active":"");
+  moreBtn.innerHTML=`<span class="mnav-icon">•••</span><span>More</span>`;
+  moreBtn.onclick=()=>{drawerEl.className=drawerEl.className.includes("open")?"":"open";};
+  navEl.appendChild(moreBtn);
+
+  // Drawer content
+  drawerEl.innerHTML="";
+  moreTabs.forEach(t=>{
+    const btn=document.createElement("button");
+    btn.style.cssText=`padding:8px 16px;border-radius:20px;border:1px solid ${state.tab===t?"#e07b3c":"#c9d5e3"};background:${state.tab===t?"#e07b3c":"transparent"};color:${state.tab===t?"#fff":"#334155"};font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;cursor:pointer`;
+    btn.textContent=t;
+    btn.onclick=()=>{drawerEl.className="";state.tab=t;renderAll();};
+    drawerEl.appendChild(btn);
+  });
+  // Close drawer on outside click
+  document.onclick=(e)=>{if(!navEl.contains(e.target)&&!drawerEl.contains(e.target))drawerEl.className="";};
+}
+
 function renderAll(){
   // Update plan selector in header
   const psEl = document.getElementById("plan-selector");
@@ -388,6 +468,7 @@ function renderAll(){
     "Import":        buildImport,
   };
   c.appendChild(builders[state.tab]());
+  renderMobileNav();
 }
 
 // ── Computed ───────────────────────────────────────────────────────────────
@@ -811,7 +892,7 @@ function buildDashboard(){
   const atlRec=findRange(atlRanges,dATL);
   const tsbRec=findRange(tsbRanges,dTSB);
 
-  const recRow=el("div");
+  const recRow=el("div","form-grid");
   recRow.style.cssText="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px";
   [
     {label:"FITNESS (CTL)",color:C.run,rec:ctlRec},
