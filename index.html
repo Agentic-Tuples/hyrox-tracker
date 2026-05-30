@@ -1,0 +1,2250 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>HYROX Tracker</title>
+<meta name="description" content="Personal HYROX training tracker — load, race splits, stations, and plan.">
+<meta name="theme-color" content="#e07b3c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HYROX">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Barlow','Segoe UI',sans-serif;background:#e8eef6;color:#334155;min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#c9d5e3;border-radius:3px}
+input,select,button{font-family:inherit}
+.header{background:linear-gradient(135deg,#d4dff0,#e8eef6);border-bottom:1px solid #c9d5e3;padding:24px 24px 0}
+.header-inner{max-width:960px;margin:0 auto}
+.header-top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.title-block .title{font-family:'Bebas Neue','Impact',sans-serif;font-size:44px;color:#e07b3c;letter-spacing:2px;line-height:1}
+.title-block .subtitle{font-size:17px;color:#7a8ba3;margin-top:6px}
+.title-block .subtitle span{color:#e07b3c;font-family:'JetBrains Mono',monospace;font-weight:700}
+.days-block{text-align:right}
+.days-block .days-num{font-family:'Bebas Neue','Impact',sans-serif;font-size:52px;color:#1a2332;line-height:1}
+.days-block .days-label{font-size:13px;color:#7a8ba3;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:2px}
+.tabs{display:flex;gap:3px;flex-wrap:wrap}
+.tab-btn{padding:8px 18px;font-size:15px;font-weight:600;cursor:pointer;border:none;border-radius:6px 6px 0 0;transition:all 0.15s;background:transparent;color:#7a8ba3}
+.tab-btn.active{background:#e07b3c;color:#fff}
+.content{max-width:960px;margin:0 auto;padding:20px 24px 60px}
+.card{background:#fff;border:1px solid #c9d5e3;border-radius:10px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.card-label{font-size:12px;font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:#fff;border:1px solid #c9d5e3;border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.stat-label{font-size:12px;font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-transform:uppercase;letter-spacing:1.5px}
+.stat-val{font-family:'Bebas Neue','Impact',sans-serif;font-size:34px;margin-top:4px}
+.stat-sub{font-size:13px;color:#7a8ba3;margin-top:5px;font-family:'JetBrains Mono',monospace}
+.stat-delta{font-size:12px;color:#7a8ba3;margin-top:2px;font-style:italic}
+.phase-bar{display:flex;gap:2px;height:34px;border-radius:5px;overflow:hidden;margin-bottom:8px}
+.phase-seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:700}
+.week-ticks{display:flex;margin-bottom:8px}
+.week-tick{text-align:center;position:relative}
+.week-tick-line{margin:0 auto;border-radius:1px}
+.week-tick-num{font-size:9px;font-family:'JetBrains Mono',monospace;margin-top:2px}
+.phase-focus{font-size:13px;margin-top:4px}
+svg.chart{overflow:visible}
+.chart-wrap{width:100%;overflow:hidden}
+.row-list{display:flex;flex-direction:column;gap:4px}
+.run-row{display:grid;grid-template-columns:70px 1fr 75px 65px 55px;align-items:center;gap:8px;padding:9px 14px;background:#fff;border:1px solid #c9d5e3;border-radius:6px;font-size:15px}
+.run-row .date{font-family:'JetBrains Mono',monospace;color:#7a8ba3;font-size:13px}
+.run-row .name{font-weight:600;color:#1a2332}
+.run-row .pace{font-family:'JetBrains Mono',monospace;font-weight:700;color:#2563eb;text-align:right}
+.run-row .dist{font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-align:right;font-size:13px}
+.run-row .hr{font-family:'JetBrains Mono',monospace;color:#e04e6a;text-align:right;font-size:13px}
+.seg-row{display:grid;grid-template-columns:28px 1fr 75px 75px 75px 75px;align-items:center;gap:8px;padding:10px 12px;border-radius:6px;margin-bottom:3px}
+.seg-num{width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.seg-name{font-weight:600;font-size:16px;color:#1a2332}
+.seg-detail{font-size:13px;color:#7a8ba3}
+.seg-col{text-align:right}
+.seg-col .col-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-transform:uppercase}
+.seg-col .col-val{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px}
+.focus-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.focus-card{background:#e8eef6;border-radius:6px;padding:14px}
+.focus-card .fc-name{font-weight:700;font-size:15px;color:#1a2332}
+.focus-card .fc-detail{font-size:12px;color:#7a8ba3;margin-top:2px}
+.focus-card .fc-nums{display:flex;justify-content:space-between;margin-top:10px}
+.focus-card .fc-nums .fn{text-align:center}
+.focus-card .fc-nums .fn-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:#7a8ba3}
+.focus-card .fc-nums .fn-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+.focus-card .fc-count{font-size:12px;color:#7a8ba3;margin-top:6px}
+.log-form{background:#fff;border:1px solid #c9d5e3;border-radius:8px;padding:20px;margin-bottom:20px}
+.log-form-title{font-size:12px;font-family:'JetBrains Mono',monospace;color:#e07b3c;text-transform:uppercase;letter-spacing:2px;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-field label{font-size:14px;color:#7a8ba3;display:block;margin-bottom:5px}
+.form-field input,.form-field select{width:100%;padding:9px 12px;background:#f0f4fa;border:1px solid #c9d5e3;border-radius:5px;color:#1a2332;font-size:16px}
+.btn-primary{margin-top:14px;padding:10px 28px;background:#e07b3c;color:#fff;border:none;border-radius:6px;font-weight:700;font-size:17px;cursor:pointer}
+.btn-primary:hover{background:#cf6e33}
+.btn-danger{padding:8px 20px;background:transparent;border:1px solid rgba(217,68,82,0.4);border-radius:6px;color:#d94452;font-size:14px;font-family:'JetBrains Mono',monospace;cursor:pointer}
+.log-table{display:flex;flex-direction:column;gap:3px}
+.log-row{display:grid;grid-template-columns:70px 1fr 70px 70px 28px;align-items:center;gap:8px;padding:9px 14px;background:#fff;border:1px solid #c9d5e3;border-radius:5px}
+.log-row .lr-date{font-family:'JetBrains Mono',monospace;font-size:13px;color:#7a8ba3}
+.log-row .lr-name{font-weight:600;color:#1a2332;font-size:16px}
+.log-row .lr-time{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:#1a2332;text-align:right}
+.log-row .lr-delta{font-family:'JetBrains Mono',monospace;font-size:14px;text-align:right}
+.log-row .lr-del{background:none;border:none;color:#7a8ba3;cursor:pointer;font-size:16px}
+.log-row .lr-notes{flex:1;font-size:11px;color:#7a8ba3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.drop-zone{background:#fff;border:2px dashed #c9d5e3;border-radius:12px;padding:48px 32px;text-align:center;cursor:pointer;margin-bottom:20px;transition:all 0.2s}
+.drop-zone.over{background:rgba(224,123,60,0.07);border-color:#e07b3c}
+.drop-zone .dz-icon{font-size:44px;margin-bottom:12px}
+.drop-zone .dz-title{font-family:'Bebas Neue','Impact',sans-serif;font-size:30px;color:#e07b3c;letter-spacing:1px}
+.drop-zone .dz-sub{font-size:16px;color:#7a8ba3;margin-top:8px}
+.drop-zone .dz-note{font-size:14px;color:#7a8ba3;margin-top:12px;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.6}
+.import-status{border-radius:8px;padding:16px 20px;margin-bottom:20px}
+.import-status.success{background:rgba(42,157,92,0.08);border:1px solid rgba(42,157,92,0.3)}
+.import-status.error{background:rgba(217,68,82,0.08);border:1px solid rgba(217,68,82,0.3)}
+.import-status .is-title{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;margin-bottom:4px}
+.import-status.success .is-title{color:#2a9d5c}
+.import-status.error .is-title{color:#d94452}
+.import-status .is-msg{font-size:16px;color:#334155}
+.import-status .is-detail{font-size:13px;color:#7a8ba3;margin-top:3px}
+.data-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+.ds-item{text-align:center}
+.ds-val{font-family:'Bebas Neue','Impact',sans-serif;font-size:36px}
+.ds-label{font-size:12px;font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.tp-guide{background:rgba(224,123,60,0.06);border:1px solid rgba(224,123,60,0.2);border-radius:8px;padding:14px 18px;margin-top:12px}
+.tp-guide-title{font-size:12px;font-family:'JetBrains Mono',monospace;color:#e07b3c;text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+.tp-guide-body{font-size:15px;color:#334155;line-height:1.9}
+.tp-guide-body code{font-family:'JetBrains Mono',monospace;color:#1a2332}
+.splits-footer{margin-top:14px;padding:14px 18px;background:#fff;border:1px solid #c9d5e3;border-radius:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.splits-footer .sf-item{font-family:'JetBrains Mono',monospace}
+.splits-footer .sf-label{font-size:14px;color:#7a8ba3}
+.splits-footer .sf-val{font-weight:700}
+.splits-footer .sf-projected{font-family:'Bebas Neue','Impact',sans-serif;font-size:28px}
+.empty{text-align:center;padding:32px;color:#7a8ba3;font-style:italic;font-size:16px}
+.readiness-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.readiness-item{text-align:center}
+.readiness-item .ri-val{font-family:'Bebas Neue','Impact',sans-serif;font-size:32px}
+.readiness-item .ri-label{font-size:12px;font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-transform:uppercase;letter-spacing:1px;margin-top:3px}
+.date-range{font-size:14px;color:#7a8ba3;text-align:center}
+.date-range code{font-family:'JetBrains Mono',monospace;color:#334155}
+.zone-table{width:100%;border-collapse:collapse}
+.zone-table td,.zone-table th{padding:8px 12px;text-align:left;font-size:14px;border-bottom:1px solid #e2e8f0}
+.zone-table th{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#7a8ba3;font-weight:600}
+.zone-badge{display:inline-block;padding:2px 9px;border-radius:4px;font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#fff}
+.fff-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.lthr-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.lthr-row input{padding:6px 10px;border:1px solid #c9d5e3;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:14px;width:80px}
+.save-btn{padding:6px 14px;background:#e07b3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px}
+.save-btn:hover{background:#c96a2e}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="title-block">
+        <div class="title">HYROX DALLAS 2026</div>
+        <div class="subtitle">Target: <span>1:20:00</span> — Nov 20 — Open Division</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div id="plan-selector"></div>
+        <div class="days-block">
+          <div class="days-num" id="daysLeft">176</div>
+          <div class="days-label">days to race</div>
+        </div>
+      </div>
+    </div>
+    <div class="tabs" id="tabs"><button class="tab-btn active">Dashboard</button><button class="tab-btn">Running</button><button class="tab-btn">Race Splits</button><button class="tab-btn">HR &amp; Load</button><button class="tab-btn">Log Station</button><button class="tab-btn">Import ↑</button><button class="tab-btn">Progress</button></div>
+  </div>
+</div>
+
+<div class="content" id="content"></div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────
+const RACE_DATE  = new Date("2026-11-20");
+const START_DATE = new Date("2026-03-23");
+
+const SEGMENTS = [
+  {id:"run1",    type:"run",     name:"Run 1",            target:265, detail:"1km"},
+  {id:"skierg",  type:"station", name:"SkiErg",           target:210, detail:"1000m"},
+  {id:"run2",    type:"run",     name:"Run 2",            target:270, detail:"1km"},
+  {id:"sledpush",type:"station", name:"Sled Push",        target:240, detail:"50m"},
+  {id:"run3",    type:"run",     name:"Run 3",            target:275, detail:"1km"},
+  {id:"sledpull",type:"station", name:"Sled Pull",        target:210, detail:"50m"},
+  {id:"run4",    type:"run",     name:"Run 4",            target:280, detail:"1km"},
+  {id:"burpees", type:"station", name:"Burpee Broad Jumps",target:330,detail:"80m",  weak:true},
+  {id:"run5",    type:"run",     name:"Run 5",            target:285, detail:"1km"},
+  {id:"row",     type:"station", name:"Rowing",           target:210, detail:"1000m"},
+  {id:"run6",    type:"run",     name:"Run 6",            target:280, detail:"1km"},
+  {id:"farmers", type:"station", name:"Farmers Carry",    target:180, detail:"200m, 2x24kg"},
+  {id:"run7",    type:"run",     name:"Run 7",            target:285, detail:"1km"},
+  {id:"lunges",  type:"station", name:"Sandbag Lunges",   target:300, detail:"100m, 20kg", weak:true},
+  {id:"run8",    type:"run",     name:"Run 8",            target:290, detail:"1km"},
+  {id:"wallballs",type:"station",name:"Wall Balls",       target:270, detail:"100 reps, 6kg", weak:true},
+];
+
+const PHASES = [
+  {name:"FOUNDATION", weeks:[1,8],   color:"#3b82f6", focus:"Aerobic base + strength foundation"},
+  {name:"BUILD",      weeks:[9,16],  color:"#f59e0b", focus:"Station-specific + race-pace runs"},
+  {name:"PEAK",       weeks:[17,28], color:"#ef4444", focus:"Simulations + max intensity"},
+  {name:"TAPER",      weeks:[29,33], color:"#22c55e", focus:"Recovery + sharpening"},
+  {name:"RACE WEEK",  weeks:[34,34], color:"#e07b3c", focus:"Rest, visualize, execute"},
+];
+
+const SEED_RUNS = [{"date":"2026-03-23","title":"Indoor Running","min":30.4,"dist":5334,"pace":342,"avgHr":163,"maxHr":170,"tss":40.5},{"date":"2026-03-27","title":"Indoor Running","min":30.2,"dist":5425,"pace":334,"avgHr":150,"maxHr":164,"tss":42.1},{"date":"2026-03-30","title":"Easy Zone 2 Run","min":30.3,"dist":5225,"pace":347,"avgHr":143,"maxHr":151,"tss":39},{"date":"2026-04-06","title":"Easy Zone 2 Run","min":50.1,"dist":8297,"pace":361,"avgHr":151,"maxHr":167,"tss":60.2},{"date":"2026-04-09","title":"Easy Zone 2 Run","min":40.1,"dist":7052,"pace":341,"avgHr":158,"maxHr":161,"tss":54},{"date":"2026-04-13","title":"Easy Zone 2 Run","min":60.3,"dist":10631,"pace":340,"avgHr":162,"maxHr":173,"tss":82.4},{"date":"2026-04-16","title":"Easy Zone 2 Run","min":43.8,"dist":7173,"pace":365,"avgHr":141,"maxHr":154,"tss":51.4},{"date":"2026-04-20","title":"Tempo Run","min":60,"dist":10761,"pace":335,"avgHr":161,"maxHr":177,"tss":84.7},{"date":"2026-04-23","title":"Easy Run","min":40.1,"dist":7098,"pace":331,"avgHr":161,"maxHr":172,"tss":60},{"date":"2026-04-25","title":"Long Run","min":60.1,"dist":10090,"pace":351,"avgHr":151,"maxHr":166,"tss":80},{"date":"2026-04-28","title":"Indoor Running","min":40.7,"dist":6762,"pace":361,"avgHr":151,"maxHr":161,"tss":54.8},{"date":"2026-04-30","title":"Easy Run 45min","min":47.4,"dist":7846,"pace":362,"avgHr":152,"maxHr":165,"tss":63.7},{"date":"2026-05-05","title":"Indoor Running","min":40.1,"dist":6590,"pace":365,"avgHr":147,"maxHr":156,"tss":52.9},{"date":"2026-05-07","title":"Easy Run 45min","min":45.2,"dist":7416,"pace":366,"avgHr":148,"maxHr":156,"tss":59.5},{"date":"2026-05-11","title":"Easy Run","min":60,"dist":10458,"pace":337,"avgHr":159,"maxHr":174,"tss":90},{"date":"2026-05-14","title":"Easy Run 50min","min":45.1,"dist":7026,"pace":385,"avgHr":143,"maxHr":156,"tss":53.5},{"date":"2026-05-18","title":"Long Run","min":80.1,"dist":13008,"pace":370,"avgHr":151,"maxHr":163,"tss":104.8},{"date":"2026-05-21","title":"Deload Run","min":30.2,"dist":4755,"pace":380,"avgHr":143,"maxHr":151,"tss":36.4},{"date":"2026-05-24","title":"Long Run 45m Deload","min":48.5,"dist":8328,"pace":350,"avgHr":159,"maxHr":170,"tss":292},{"date":"2026-05-26","title":"Tempo Run 30m 4:50/km","min":30.1,"dist":5223,"pace":346,"avgHr":152,"maxHr":165,"tss":43.8},{"date":"2026-05-28","title":"Easy Run 50min","min":50.3,"dist":7937,"pace":380,"avgHr":144,"maxHr":156,"tss":61.4}];
+
+const SEED_OTHER = [{"date":"2026-03-24","title":"Cardio HIIT","type":"HIIT","min":25.8,"avgHr":159,"maxHr":173,"tss":52.2},{"date":"2026-04-08","title":"Cardio HIIT","type":"HIIT","min":24.6,"avgHr":160,"maxHr":178,"tss":50.1},{"date":"2026-04-14","title":"Rowing Intro","type":"Rowing","min":36.9,"avgHr":138,"maxHr":170,"tss":46.9},{"date":"2026-04-22","title":"Cardio HIIT","type":"HIIT","min":27.8,"avgHr":155,"maxHr":173,"tss":51},{"date":"2026-05-12","title":"Cardio HIIT","type":"HIIT","min":47.7,"avgHr":140,"maxHr":167,"tss":73.2},{"date":"2026-05-13","title":"Strength","type":"Strength","min":38.6,"avgHr":117,"maxHr":158,"tss":35.1},{"date":"2026-05-19","title":"HIIT","type":"HIIT","min":38.3,"avgHr":158,"maxHr":175,"tss":82},{"date":"2026-05-20","title":"Strength","type":"Strength","min":43.1,"avgHr":122,"maxHr":165,"tss":45.6},{"date":"2026-05-26","title":"Indoor Rowing","type":"Rowing","min":18.9,"avgHr":138,"maxHr":164,"tss":27.5},{"date":"2026-05-27","title":"Strength Training","type":"Strength","min":36.9,"avgHr":115,"maxHr":143,"tss":30.7},{"date":"2026-05-28","title":"HIIT","type":"HIIT","min":6.1,"avgHr":149,"maxHr":159,"tss":11.6}];
+
+const SK = {runs:"hyrox-tp-runs-v1", other:"hyrox-tp-other-v1", station:"hyrox-station-log-v2", hrv:"hyrox-ah-hrv-v1", rhr:"hyrox-ah-rhr-v1", vo2:"hyrox-ah-vo2-v1", sims:"hyrox-sims-v1", plans:"hyrox-plans-v2", activePlanId:"hyrox-active-plan-id-v1"};
+
+const SEED_STATIONS = [{"id":1748390001,"segment":"skierg","time":270,"date":"2026-05-26","notes":"5x500m benchmark, best consec 4:34"},{"id":1748390002,"segment":"row","time":238,"date":"2026-05-26","notes":"5x500m benchmark, best consec 4:00"},{"id":1780005641744,"segment":"lunges","time":367,"date":"2026-05-28","notes":"25 pound bag"}];
+let PLAN_WEEKS=[{"week":1,"phase":"Phase 1","startDate":"2026-03-30","days":[{"day":"Mon","date":"2026-03-30","desc":"Easy Run 30min · HR Zone 2","type":"easy","tss":36},{"day":"Tue","date":"2026-03-31","desc":"REST · or Walk","type":"rest","tss":5},{"day":"Wed","date":"2026-04-01","desc":"Strength Circuit A · 3×10 squats, rows, push-ups","type":"strength","tss":30},{"day":"Thu","date":"2026-04-02","desc":"Easy Run 35min · HR Zone 2","type":"easy","tss":42},{"day":"Fri","date":"2026-04-03","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-04-04","desc":"Long Run 45min · Easy pace","type":"long","tss":61}],"weeklyTSS":174},{"week":2,"phase":"Phase 1","startDate":"2026-04-06","days":[{"day":"Mon","date":"2026-04-06","desc":"Easy Run 30min · HR Zone 2","type":"easy","tss":36},{"day":"Tue","date":"2026-04-07","desc":"Station Intro: SkiErg 3×200m","type":"station","tss":45},{"day":"Wed","date":"2026-04-08","desc":"Strength Circuit A · 3×12 squats, rows, push-ups","type":"strength","tss":30},{"day":"Thu","date":"2026-04-09","desc":"Easy Run 40min · HR Zone 2","type":"easy","tss":48},{"day":"Fri","date":"2026-04-10","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-04-11","desc":"Long Run 50min · Easy pace","type":"long","tss":68}],"weeklyTSS":227},{"week":3,"phase":"Phase 1","startDate":"2026-04-13","days":[{"day":"Mon","date":"2026-04-13","desc":"Easy Run 35min · HR Zone 2","type":"easy","tss":42},{"day":"Tue","date":"2026-04-14","desc":"Station Intro: Rowing 3×250m","type":"station","tss":45},{"day":"Wed","date":"2026-04-15","desc":"Strength Circuit B · 3×10 deadlifts, lunges, pull-ups","type":"strength","tss":30},{"day":"Thu","date":"2026-04-16","desc":"Easy Run 40min · HR Zone 2","type":"easy","tss":48},{"day":"Fri","date":"2026-04-17","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-04-18","desc":"Long Run 55min · Easy pace + SkiErg 500m","type":"long","tss":74}],"weeklyTSS":239},{"week":4,"phase":"Phase 1","startDate":"2026-04-20","days":[{"day":"Mon","date":"2026-04-20","desc":"Tempo Run 20min · (5:00/km pace)","type":"tempo","tss":48},{"day":"Tue","date":"2026-04-21","desc":"Sled Push/Pull · 4×25m each","type":"station","tss":45},{"day":"Wed","date":"2026-04-22","desc":"Strength Circuit B · 3×12 all","type":"strength","tss":30},{"day":"Thu","date":"2026-04-23","desc":"Easy Run 40min · HR Zone 2","type":"easy","tss":48},{"day":"Fri","date":"2026-04-24","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-04-25","desc":"Long Run 60min · Zone 2","type":"long","tss":81}],"weeklyTSS":252},{"week":5,"phase":"Phase 1","startDate":"2026-04-27","days":[{"day":"Mon","date":"2026-04-27","desc":"Easy Run 35min","type":"easy","tss":42},{"day":"Tue","date":"2026-04-28","desc":"SkiErg 4×250m + Row 4×250m","type":"station","tss":45},{"day":"Wed","date":"2026-04-29","desc":"Strength Circuit A · 4×10","type":"strength","tss":30},{"day":"Thu","date":"2026-04-30","desc":"Easy Run 45min · HR Zone 2","type":"easy","tss":54},{"day":"Fri","date":"2026-05-01","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-05-02","desc":"Long Run 60min + Wall Balls 3×20","type":"long","tss":81}],"weeklyTSS":252},{"week":6,"phase":"Phase 1","startDate":"2026-05-04","days":[{"day":"Mon","date":"2026-05-04","desc":"Tempo Run 25min · (4:55/km pace)","type":"tempo","tss":60},{"day":"Tue","date":"2026-05-05","desc":"Farmers Carry 5×40m + Sandbag Lunges 3×20m","type":"station","tss":45},{"day":"Wed","date":"2026-05-06","desc":"Strength Circuit B · 4×10","type":"strength","tss":30},{"day":"Thu","date":"2026-05-07","desc":"Easy Run 45min · HR Zone 2","type":"easy","tss":54},{"day":"Fri","date":"2026-05-08","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-05-09","desc":"Long Run 65min · Easy pace","type":"long","tss":88}],"weeklyTSS":277},{"week":7,"phase":"Phase 1","startDate":"2026-05-11","days":[{"day":"Mon","date":"2026-05-11","desc":"Easy Run 40min","type":"easy","tss":48},{"day":"Tue","date":"2026-05-12","desc":"Burpee Broad Jumps · 3×20m + SkiErg 3×300m","type":"station","tss":45},{"day":"Wed","date":"2026-05-13","desc":"Strength Circuit A · 4×12","type":"strength","tss":30},{"day":"Thu","date":"2026-05-14","desc":"Easy Run 50min","type":"easy","tss":60},{"day":"Fri","date":"2026-05-15","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-05-16","desc":"Long Run 70min + Station medley","type":"long","tss":94}],"weeklyTSS":277},{"week":8,"phase":"Phase 1","startDate":"2026-05-18","days":[{"day":"Mon","date":"2026-05-18","desc":"Easy Run 30min","type":"easy","tss":36},{"day":"Tue","date":"2026-05-19","desc":"REST","type":"rest","tss":0},{"day":"Wed","date":"2026-05-20","desc":"Strength Circuit B · 3×8 (light)","type":"strength","tss":30},{"day":"Thu","date":"2026-05-21","desc":"Easy Run 30min","type":"easy","tss":36},{"day":"Fri","date":"2026-05-22","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-05-23","desc":"Long Run 45min · Easy deload week","type":"long","tss":61}],"weeklyTSS":163},{"week":9,"phase":"Phase 2","startDate":"2026-05-25","days":[{"day":"Mon","date":"2026-05-25","desc":"Tempo Run 30min · (4:50/km)","type":"tempo","tss":72},{"day":"Tue","date":"2026-05-26","desc":"SkiErg 5×200m + Row 5×200m","type":"station","tss":45},{"day":"Wed","date":"2026-05-27","desc":"Strength + Metcon: Deadlift 4×8 + 10min AMRAP","type":"strength","tss":55},{"day":"Thu","date":"2026-05-28","desc":"Easy Run 50min","type":"easy","tss":60},{"day":"Fri","date":"2026-05-29","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-05-30","desc":"Long Run 75min + Sled 4×50m","type":"long","tss":101}],"weeklyTSS":333},{"week":10,"phase":"Phase 2","startDate":"2026-06-01","days":[{"day":"Mon","date":"2026-06-01","desc":"Interval Run · 6×800m @ 4:30/km","type":"interval","tss":88},{"day":"Tue","date":"2026-06-02","desc":"Sled Push 6×50m + Sled Pull 6×50m","type":"station","tss":45},{"day":"Wed","date":"2026-06-03","desc":"Upper Strength: Bench, Row, Pull-up 4×8","type":"strength","tss":30},{"day":"Thu","date":"2026-06-04","desc":"Easy Run 50min","type":"easy","tss":60},{"day":"Fri","date":"2026-06-05","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-06-06","desc":"Long Run 80min · HR Zone 2","type":"long","tss":108}],"weeklyTSS":331},{"week":11,"phase":"Phase 2","startDate":"2026-06-08","days":[{"day":"Mon","date":"2026-06-08","desc":"Tempo Run 30min · (4:45/km)","type":"tempo","tss":72},{"day":"Tue","date":"2026-06-09","desc":"Row 5×300m + Wall Balls 5×20","type":"station","tss":45},{"day":"Wed","date":"2026-06-10","desc":"Lower Strength: Squat, Lunge, RDL 4×8","type":"strength","tss":30},{"day":"Thu","date":"2026-06-11","desc":"Easy Run 55min","type":"easy","tss":66},{"day":"Fri","date":"2026-06-12","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-06-13","desc":"Long Run 80min + Farmers Carry 5×50m","type":"long","tss":108}],"weeklyTSS":321},{"week":12,"phase":"Phase 2","startDate":"2026-06-15","days":[{"day":"Mon","date":"2026-06-15","desc":"Interval Run · 8×800m @ 4:30/km","type":"interval","tss":100},{"day":"Tue","date":"2026-06-16","desc":"SkiErg 1000m TT (aim <4:30)","type":"station","tss":45},{"day":"Wed","date":"2026-06-17","desc":"Full Body Strength · 4×8 compound lifts","type":"strength","tss":30},{"day":"Thu","date":"2026-06-18","desc":"Easy Run 55min","type":"easy","tss":66},{"day":"Fri","date":"2026-06-19","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-06-20","desc":"Long Run 85min + Station combos","type":"long","tss":115}],"weeklyTSS":356},{"week":13,"phase":"Phase 2","startDate":"2026-06-22","days":[{"day":"Mon","date":"2026-06-22","desc":"Tempo Run 35min · (4:45/km)","type":"tempo","tss":84},{"day":"Tue","date":"2026-06-23","desc":"Row 1000m TT (aim <3:50)","type":"station","tss":45},{"day":"Wed","date":"2026-06-24","desc":"Strength + Metcon · 4×10 + 12min AMRAP","type":"strength","tss":55},{"day":"Thu","date":"2026-06-25","desc":"Easy Run 55min","type":"easy","tss":66},{"day":"Fri","date":"2026-06-26","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-06-27","desc":"Long Run 85min · Zone 2","type":"long","tss":115}],"weeklyTSS":365},{"week":14,"phase":"Phase 2","startDate":"2026-06-29","days":[{"day":"Mon","date":"2026-06-29","desc":"Interval Run · 8×1km @ 4:30/km","type":"interval","tss":100},{"day":"Tue","date":"2026-06-30","desc":"Sled 6×50m + BBJ 4×20m + Sandbag Lunges 4×25m","type":"station","tss":45},{"day":"Wed","date":"2026-07-01","desc":"Strength: Deadlift 5×5","type":"strength","tss":30},{"day":"Thu","date":"2026-07-02","desc":"Easy Run 60min","type":"easy","tss":72},{"day":"Fri","date":"2026-07-03","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-07-04","desc":"Long Run 90min + SkiErg 3×500m","type":"long","tss":122}],"weeklyTSS":369},{"week":15,"phase":"Phase 2","startDate":"2026-07-06","days":[{"day":"Mon","date":"2026-07-06","desc":"Tempo Run 35min · (4:40/km)","type":"tempo","tss":84},{"day":"Tue","date":"2026-07-07","desc":"Half-Hyrox Sim: 4 runs×1km + 4 stations","type":"sim","tss":85},{"day":"Wed","date":"2026-07-08","desc":"Upper Strength · 5×5 heavy","type":"strength","tss":30},{"day":"Thu","date":"2026-07-09","desc":"Easy Run 60min","type":"easy","tss":72},{"day":"Fri","date":"2026-07-10","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-07-11","desc":"Long Run 90min · Zone 2","type":"long","tss":122}],"weeklyTSS":393},{"week":16,"phase":"Phase 2","startDate":"2026-07-13","days":[{"day":"Mon","date":"2026-07-13","desc":"Easy Run 40min","type":"easy","tss":48},{"day":"Tue","date":"2026-07-14","desc":"REST","type":"rest","tss":0},{"day":"Wed","date":"2026-07-15","desc":"Strength 3×8 (light)","type":"strength","tss":20},{"day":"Thu","date":"2026-07-16","desc":"Easy Run 40min","type":"easy","tss":48},{"day":"Fri","date":"2026-07-17","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-07-18","desc":"Long Run 60min · Easy deload week","type":"long","tss":81}],"weeklyTSS":197},{"week":17,"phase":"Phase 3","startDate":"2026-07-20","days":[{"day":"Mon","date":"2026-07-20","desc":"Interval Run · 10×1km @ 4:20/km","type":"interval","tss":100},{"day":"Tue","date":"2026-07-21","desc":"Full Hyrox Sim (target 1:30 total)","type":"sim","tss":110},{"day":"Wed","date":"2026-07-22","desc":"Strength: Squat 5×5 + accessories","type":"strength","tss":30},{"day":"Thu","date":"2026-07-23","desc":"Easy Run 60min","type":"easy","tss":72},{"day":"Fri","date":"2026-07-24","desc":"SkiErg 2000m + Row 2000m","type":"station","tss":45},{"day":"Sat","date":"2026-07-25","desc":"Long Run 95min · Zone 2","type":"long","tss":128}],"weeklyTSS":485},{"week":18,"phase":"Phase 3","startDate":"2026-07-27","days":[{"day":"Mon","date":"2026-07-27","desc":"Tempo Run 40min · (4:35/km)","type":"tempo","tss":96},{"day":"Tue","date":"2026-07-28","desc":"Sled 8×50m push+pull + BBJ 80m","type":"station","tss":45},{"day":"Wed","date":"2026-07-29","desc":"Strength Metcon · 5×5 + 15min AMRAP","type":"strength","tss":55},{"day":"Thu","date":"2026-07-30","desc":"Easy Run 65min","type":"easy","tss":78},{"day":"Fri","date":"2026-07-31","desc":"Farmers Carry 200m + Sandbag Lunges 100m","type":"station","tss":45},{"day":"Sat","date":"2026-08-01","desc":"Long Run 95min + Wall Balls 100","type":"long","tss":128}],"weeklyTSS":447},{"week":19,"phase":"Phase 3","startDate":"2026-08-03","days":[{"day":"Mon","date":"2026-08-03","desc":"Interval Run · 10×1km @ 4:20/km","type":"interval","tss":100},{"day":"Tue","date":"2026-08-04","desc":"Full Hyrox Sim (target 1:27 total)","type":"sim","tss":110},{"day":"Wed","date":"2026-08-05","desc":"Upper Strength · 5×5 heavy","type":"strength","tss":30},{"day":"Thu","date":"2026-08-06","desc":"Easy Run 65min","type":"easy","tss":78},{"day":"Fri","date":"2026-08-07","desc":"Station Block: Row+SkiErg+BBJ","type":"station","tss":45},{"day":"Sat","date":"2026-08-08","desc":"Long Run 100min · Zone 2","type":"long","tss":135}],"weeklyTSS":498},{"week":20,"phase":"Phase 3","startDate":"2026-08-10","days":[{"day":"Mon","date":"2026-08-10","desc":"Tempo Run 40min · (4:30/km)","type":"tempo","tss":96},{"day":"Tue","date":"2026-08-11","desc":"SkiErg 1000m TT (aim <4:20)","type":"station","tss":45},{"day":"Wed","date":"2026-08-12","desc":"Lower Strength: Deadlift 5×3 heavy","type":"strength","tss":30},{"day":"Thu","date":"2026-08-13","desc":"Easy Run 65min","type":"easy","tss":78},{"day":"Fri","date":"2026-08-14","desc":"Row 1000m TT (aim <3:40)","type":"station","tss":45},{"day":"Sat","date":"2026-08-15","desc":"Long Run 100min + Station medley","type":"long","tss":135}],"weeklyTSS":429},{"week":21,"phase":"Phase 3","startDate":"2026-08-17","days":[{"day":"Mon","date":"2026-08-17","desc":"Interval Run · 12×1km @ 4:20/km","type":"interval","tss":100},{"day":"Tue","date":"2026-08-18","desc":"Full Hyrox Sim (target 1:25 total)","type":"sim","tss":110},{"day":"Wed","date":"2026-08-19","desc":"Full Body Strength · 5×5 compound","type":"strength","tss":30},{"day":"Thu","date":"2026-08-20","desc":"Easy Run 70min","type":"easy","tss":84},{"day":"Fri","date":"2026-08-21","desc":"Sled + Carry + Lunges · full station block","type":"station","tss":45},{"day":"Sat","date":"2026-08-22","desc":"Long Run 105min · Zone 2","type":"long","tss":142}],"weeklyTSS":511},{"week":22,"phase":"Phase 3","startDate":"2026-08-24","days":[{"day":"Mon","date":"2026-08-24","desc":"Tempo Run 45min · (4:30/km)","type":"tempo","tss":108},{"day":"Tue","date":"2026-08-25","desc":"SkiErg + Row · 1000m each @ race pace","type":"station","tss":45},{"day":"Wed","date":"2026-08-26","desc":"Strength: Squat 5×3 heavy","type":"strength","tss":30},{"day":"Thu","date":"2026-08-27","desc":"Easy Run 70min","type":"easy","tss":84},{"day":"Fri","date":"2026-08-28","desc":"BBJ 80m + Wall Balls 100 for time","type":"station","tss":45},{"day":"Sat","date":"2026-08-29","desc":"Long Run 105min + Core work","type":"long","tss":142}],"weeklyTSS":454},{"week":23,"phase":"Phase 3","startDate":"2026-08-31","days":[{"day":"Mon","date":"2026-08-31","desc":"Interval Run · 12×1km @ 4:20/km","type":"interval","tss":100},{"day":"Tue","date":"2026-09-01","desc":"Full Hyrox Sim (target 1:22 total)","type":"sim","tss":110},{"day":"Wed","date":"2026-09-02","desc":"Upper Strength · 5×3","type":"strength","tss":30},{"day":"Thu","date":"2026-09-03","desc":"Easy Run 70min","type":"easy","tss":84},{"day":"Fri","date":"2026-09-04","desc":"Station combo: Sled+Carry+Lunges","type":"station","tss":45},{"day":"Sat","date":"2026-09-05","desc":"Long Run 110min · Zone 2","type":"long","tss":148}],"weeklyTSS":517},{"week":24,"phase":"Phase 3","startDate":"2026-09-07","days":[{"day":"Mon","date":"2026-09-07","desc":"Easy Run 45min","type":"easy","tss":54},{"day":"Tue","date":"2026-09-08","desc":"REST","type":"rest","tss":0},{"day":"Wed","date":"2026-09-09","desc":"Strength 3×6 (moderate)","type":"strength","tss":20},{"day":"Thu","date":"2026-09-10","desc":"Easy Run 45min","type":"easy","tss":54},{"day":"Fri","date":"2026-09-11","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-09-12","desc":"Long Run 70min · Easy deload week","type":"long","tss":94}],"weeklyTSS":222},{"week":25,"phase":"Phase 3","startDate":"2026-09-14","days":[{"day":"Mon","date":"2026-09-14","desc":"Interval Run · 10×1km @ 4:15/km","type":"interval","tss":100},{"day":"Tue","date":"2026-09-15","desc":"Full Hyrox Sim (target 1:21 total)","type":"sim","tss":110},{"day":"Wed","date":"2026-09-16","desc":"Strength Maintenance · 4×5","type":"strength","tss":20},{"day":"Thu","date":"2026-09-17","desc":"Easy Run 70min","type":"easy","tss":84},{"day":"Fri","date":"2026-09-18","desc":"SkiErg 1000m + Row 1000m @ race pace","type":"station","tss":45},{"day":"Sat","date":"2026-09-19","desc":"Long Run 110min · Zone 2","type":"long","tss":148}],"weeklyTSS":507},{"week":26,"phase":"Phase 3","startDate":"2026-09-21","days":[{"day":"Mon","date":"2026-09-21","desc":"Tempo Run 45min · (4:25/km)","type":"tempo","tss":108},{"day":"Tue","date":"2026-09-22","desc":"Race-pace Intervals · 8×1km @ 4:15/km","type":"racepace","tss":126},{"day":"Wed","date":"2026-09-23","desc":"Strength Maintenance · 4×5","type":"strength","tss":20},{"day":"Thu","date":"2026-09-24","desc":"Easy Run 70min","type":"easy","tss":84},{"day":"Fri","date":"2026-09-25","desc":"Full station block @ race pace","type":"station","tss":45},{"day":"Sat","date":"2026-09-26","desc":"Long Run 110min + Wall Balls 100","type":"long","tss":148}],"weeklyTSS":531},{"week":27,"phase":"Phase 3","startDate":"2026-09-28","days":[{"day":"Mon","date":"2026-09-28","desc":"Interval Run · 10×1km @ 4:15/km","type":"interval","tss":100},{"day":"Tue","date":"2026-09-29","desc":"Full Hyrox Sim (target 1:20 total) 🎯","type":"sim","tss":110},{"day":"Wed","date":"2026-09-30","desc":"Strength: Deadlift 4×5 + accessories","type":"strength","tss":30},{"day":"Thu","date":"2026-10-01","desc":"Easy Run 70min","type":"easy","tss":84},{"day":"Fri","date":"2026-10-02","desc":"SkiErg+Row TT · 1000m each","type":"station","tss":45},{"day":"Sat","date":"2026-10-03","desc":"Long Run 110min · Zone 2","type":"long","tss":148}],"weeklyTSS":517},{"week":28,"phase":"Phase 3","startDate":"2026-10-05","days":[{"day":"Mon","date":"2026-10-05","desc":"Easy Run 40min","type":"easy","tss":48},{"day":"Tue","date":"2026-10-06","desc":"REST","type":"rest","tss":0},{"day":"Wed","date":"2026-10-07","desc":"Strength 3×5 (moderate)","type":"strength","tss":20},{"day":"Thu","date":"2026-10-08","desc":"Easy Run 40min","type":"easy","tss":48},{"day":"Fri","date":"2026-10-09","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-10-10","desc":"Long Run 70min · Easy deload week","type":"long","tss":94}],"weeklyTSS":210},{"week":29,"phase":"Phase 4","startDate":"2026-10-12","days":[{"day":"Mon","date":"2026-10-12","desc":"Race-pace Run · 6×1km @ 4:15/km","type":"racepace","tss":102},{"day":"Tue","date":"2026-10-13","desc":"Station Block: 80% intensity","type":"station","tss":45},{"day":"Wed","date":"2026-10-14","desc":"Strength 3×5 (maintain)","type":"strength","tss":20},{"day":"Thu","date":"2026-10-15","desc":"Easy Run 55min","type":"easy","tss":66},{"day":"Fri","date":"2026-10-16","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-10-17","desc":"Long Run 90min · Zone 2","type":"long","tss":122}],"weeklyTSS":355},{"week":30,"phase":"Phase 4","startDate":"2026-10-19","days":[{"day":"Mon","date":"2026-10-19","desc":"Race-pace Run · 5×1km @ 4:15/km","type":"racepace","tss":90},{"day":"Tue","date":"2026-10-20","desc":"SkiErg 1000m + Row 1000m @race pace (fresh)","type":"station","tss":45},{"day":"Wed","date":"2026-10-21","desc":"Strength 3×5 (maintain)","type":"strength","tss":20},{"day":"Thu","date":"2026-10-22","desc":"Easy Run 50min","type":"easy","tss":60},{"day":"Fri","date":"2026-10-23","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-10-24","desc":"Long Run 80min · Zone 2","type":"long","tss":108}],"weeklyTSS":323},{"week":31,"phase":"Phase 4","startDate":"2026-10-26","days":[{"day":"Mon","date":"2026-10-26","desc":"Race-pace Run · 4×1km @ 4:15/km","type":"racepace","tss":78},{"day":"Tue","date":"2026-10-27","desc":"Station Sharpener: 50% volume, race pace","type":"station","tss":20},{"day":"Wed","date":"2026-10-28","desc":"Strength 3×4 (light)","type":"strength","tss":20},{"day":"Thu","date":"2026-10-29","desc":"Easy Run 45min","type":"easy","tss":54},{"day":"Fri","date":"2026-10-30","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-10-31","desc":"Long Run 70min · Zone 2","type":"long","tss":94}],"weeklyTSS":266},{"week":32,"phase":"Phase 4","startDate":"2026-11-02","days":[{"day":"Mon","date":"2026-11-02","desc":"Race-pace Run · 3×1km @ 4:10/km","type":"racepace","tss":66},{"day":"Tue","date":"2026-11-03","desc":"SkiErg + Row · 500m each @ race pace","type":"station","tss":45},{"day":"Wed","date":"2026-11-04","desc":"Light Strength · 2×8 activation","type":"strength","tss":20},{"day":"Thu","date":"2026-11-05","desc":"Easy Run 40min","type":"easy","tss":48},{"day":"Fri","date":"2026-11-06","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-11-07","desc":"Long Run 60min · Zone 2","type":"long","tss":81}],"weeklyTSS":260},{"week":33,"phase":"Phase 4","startDate":"2026-11-09","days":[{"day":"Mon","date":"2026-11-09","desc":"Easy Run 30min · Activation","type":"easy","tss":36},{"day":"Tue","date":"2026-11-10","desc":"REST","type":"rest","tss":0},{"day":"Wed","date":"2026-11-11","desc":"Light Activation: Mobility + 2×8 squats + 2×20 wall balls","type":"station","tss":20},{"day":"Thu","date":"2026-11-12","desc":"Easy Run 25min · Easy strides","type":"easy","tss":30},{"day":"Fri","date":"2026-11-13","desc":"REST","type":"rest","tss":0},{"day":"Sat","date":"2026-11-14","desc":"Easy Run 20min + stretch","type":"easy","tss":24}],"weeklyTSS":110},{"week":34,"phase":"Race Week","startDate":"2026-11-16","days":[{"day":"Mon","date":"2026-11-16","desc":"Easy Run 20min · Light activation","type":"easy","tss":24},{"day":"Tue","date":"2026-11-17","desc":"REST · Mobility & prep","type":"rest","tss":0},{"day":"Wed","date":"2026-11-18","desc":"Easy Run 15min + Race gear check","type":"easy","tss":18},{"day":"Thu","date":"2026-11-19","desc":"REST · Rest & hydrate","type":"rest","tss":0},{"day":"Fri","date":"2026-11-20","desc":"RACE DAY 🏅 SUB 1:20 TARGET","type":"race","tss":0},{"day":"Sat","date":"2026-11-21","desc":"Recovery · Celebrate! 🎉","type":"rest","tss":0}],"weeklyTSS":42}];
+const TABS = ["Dashboard","Race Splits","Running","Stations","Heart Rate","Load","Training Plan","Sim Log","Import"];
+const C = {accent:"#e07b3c",success:"#2a9d5c",danger:"#d94452",warn:"#d98a25",run:"#2563eb",hr:"#e04e6a",tss:"#7c5cbf",z2:"#0d7f8f",dim:"#7a8ba3",bright:"#1a2332",border:"#c9d5e3"};
+const ZC = ["","#3b82f6","#22c55e","#f59e0b","#e07b3c","#ef4444"];
+const ZN = ["","Recovery","Aerobic","Tempo","Threshold","Anaerobic"];
+
+// ── Storage ────────────────────────────────────────────────────────────────
+const store = {
+  get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+
+// ── State ──────────────────────────────────────────────────────────────────
+let state = {
+  tab: "Dashboard",
+  runs: [], other: [], stations: [],
+  lthr: 163,
+  manualFFF: null,
+  logForm: {date:today(), segment:"skierg", time:"", notes:""},
+  importStatus: null, ahStatus: null, saved: false, simSaved: false, calFilter:"upcoming",
+  plans: [],       // array of {id, name, raceDate, createdAt, cfg, weeks}
+  activePlanId: "default",
+  planFormCfg: {raceDate:"2026-11-20", targetMin:80, raceType:"full", weeklyKm:30, longestKm:12, level:"intermediate", daysPerWeek:5, maxMin:60, age:35, weakStations:[]},
+  hrv: [], restingHR: [], vo2max: [],
+  sims: [],
+  simForm: {date:today(), type:"full", time:"", notes:""}
+};
+
+function today(){return new Date().toISOString().split("T")[0]}
+function fmt(s){const m=Math.floor(s/60);return m+":"+(s%60).toString().padStart(2,"0")}
+function el(tag,cls,inner){const e=document.createElement(tag);if(cls)e.className=cls;if(inner!==undefined)e.innerHTML=inner;return e}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function init(){
+  const savedRuns   = store.get(SK.runs);
+  const savedOther  = store.get(SK.other);
+  const savedSt     = store.get(SK.station);
+  state.runs     = (savedRuns   && savedRuns.length)   ? savedRuns   : SEED_RUNS;
+  state.other    = (savedOther  && savedOther.length)  ? savedOther  : SEED_OTHER;
+  state.stations = (savedSt     && savedSt.length)     ? savedSt     : SEED_STATIONS;
+  if(!savedRuns  || !savedRuns.length)  store.set(SK.runs,    SEED_RUNS);
+  if(!savedOther || !savedOther.length) store.set(SK.other,   SEED_OTHER);
+  if(!savedSt    || !savedSt.length)    store.set(SK.station, SEED_STATIONS);
+  const savedLthr = store.get("hyrox-lthr-v1");
+  if(savedLthr) state.lthr = savedLthr;
+  const savedFFF = store.get("hyrox-manualfff-v1");
+  if(savedFFF) state.manualFFF = savedFFF;
+  const savedHrv = store.get(SK.hrv); if(savedHrv&&savedHrv.length) state.hrv = savedHrv;
+  const savedRhr = store.get(SK.rhr); if(savedRhr&&savedRhr.length) state.restingHR = savedRhr;
+  const savedVo2 = store.get(SK.vo2); if(savedVo2&&savedVo2.length) state.vo2max = savedVo2;
+  const savedSims = store.get(SK.sims); if(savedSims&&savedSims.length) state.sims = savedSims;
+  // Load plans — seed with the hardcoded default plan always present
+  const defaultPlan = {id:"default", name:"Dallas HYROX 2026", raceDate:"2026-11-20", createdAt:"2026-03-30", cfg:null, weeks:null}; // weeks:null = use hardcoded PLAN_WEEKS
+  const savedPlans = store.get(SK.plans);
+  state.plans = savedPlans && savedPlans.length ? savedPlans : [defaultPlan];
+  // Ensure default plan is always in the list
+  if(!state.plans.find(p=>p.id==="default")) state.plans.unshift(defaultPlan);
+  const savedActiveId = store.get(SK.activePlanId);
+  state.activePlanId = savedActiveId || "default";
+  // Ensure activePlanId points to an existing plan
+  if(!state.plans.find(p=>p.id===state.activePlanId)) state.activePlanId="default";
+  // Set PLAN_WEEKS from active plan
+  const activePlan = state.plans.find(p=>p.id===state.activePlanId);
+  if(activePlan && activePlan.weeks) PLAN_WEEKS = activePlan.weeks;
+  renderAll();
+}
+
+// PLAN_WEEKS_DEFAULT holds the original hardcoded plan so we can always revert
+const PLAN_WEEKS_DEFAULT = PLAN_WEEKS.slice();
+
+function switchPlan(id){
+  const p = state.plans.find(pl=>pl.id===id);
+  if(!p) return;
+  state.activePlanId = id;
+  // default plan has weeks:null — use the hardcoded constant
+  PLAN_WEEKS = p.weeks ? p.weeks : PLAN_WEEKS_DEFAULT;
+  store.set(SK.activePlanId, id);
+  store.set(SK.plans, state.plans);
+  renderAll();
+}
+
+function renderAll(){
+  // Update plan selector in header
+  const psEl = document.getElementById("plan-selector");
+  if(psEl && state.plans.length){
+    const newPlanBtn=`<button onclick="state.tab='New Plan';renderAll()" style="padding:5px 12px;background:#e07b3c;color:#fff;border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:12px;font-family:'JetBrains Mono',monospace;white-space:nowrap">+ New Plan</button>`;
+    if(state.plans.length===1){
+      psEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px">${newPlanBtn}<div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-align:right"><div style="font-weight:700;color:#334155">${state.plans[0].name}</div><div>Active Plan</div></div></div>`;
+    } else {
+      psEl.innerHTML=`<div style="display:flex;align-items:center;gap:10px">${newPlanBtn}<div style="text-align:right"><div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px">Active Plan</div><select id="plan-switch" style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;border:1px solid #c9d5e3;border-radius:6px;padding:4px 8px;background:#fff;color:#1a2332;cursor:pointer">${state.plans.map(p=>`<option value="${p.id}" ${p.id===state.activePlanId?"selected":""}>${p.name}</option>`).join("")}</select></div></div>`;
+      document.getElementById("plan-switch").onchange=e=>switchPlan(e.target.value);
+    }
+  }
+  const daysLeft = Math.max(0, Math.ceil((RACE_DATE - new Date())/864e5));
+  document.getElementById("daysLeft").textContent = daysLeft;
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = "";
+  TABS.forEach(t=>{
+    const b = el("button","tab-btn"+(t===state.tab?" active":""),t);
+    b.onclick=()=>{state.tab=t;renderAll()};
+    tabsEl.appendChild(b);
+  });
+  const c = document.getElementById("content");
+  c.innerHTML = "";
+  const builders = {
+    "Dashboard":   buildDashboard,
+    "Race Splits":   buildRaceSplits,
+    "Running":       buildRunning,
+    "Stations":      buildLogStation,
+    "Heart Rate":    buildHeartRate,
+    "Load":          buildLoad,
+    "Training Plan": buildTrainingPlan,
+    "Sim Log":       buildSimLog,
+    "New Plan":      buildNewPlan,
+    "Import":        buildImport,
+  };
+  c.appendChild(builders[state.tab]());
+}
+
+// ── Computed ───────────────────────────────────────────────────────────────
+function getRunStats(){
+  if(!state.runs.length) return {sorted:[],avgPace:0,bestPace:999,totalDist:0,totalMin:0,avgHr:0,est1km:360};
+  const sorted = [...state.runs].sort((a,b)=>a.date.localeCompare(b.date));
+  const avgPace  = Math.round(sorted.reduce((s,r)=>s+r.pace,0)/sorted.length);
+  const bestPace = Math.min(...sorted.map(r=>r.pace));
+  const totalDist = sorted.reduce((s,r)=>s+r.dist,0);
+  const totalMin  = sorted.reduce((s,r)=>s+r.min,0);
+  const avgHr     = Math.round(sorted.reduce((s,r)=>s+r.avgHr,0)/sorted.length);
+  const est1km    = Math.round(avgPace*1.10);
+  return {sorted,avgPace,bestPace,totalDist,totalMin,avgHr,est1km};
+}
+
+function getBestStation(){
+  const b={};
+  SEGMENTS.filter(s=>s.type==="station").forEach(seg=>{
+    const logs = state.stations.filter(l=>l.segment===seg.id).sort((a,b_)=>a.time-b_.time);
+    if(logs.length) b[seg.id]=logs[0].time;
+  });
+  return b;
+}
+
+function getProjected(rs, bestSt){
+  return SEGMENTS.reduce((s,seg)=>{
+    if(seg.type==="run") return s+(rs.est1km+(parseInt(seg.id.replace("run",""))-1)*8);
+    return s+(bestSt[seg.id]||seg.target);
+  },0);
+}
+
+function getTimeInfo(){
+  const daysLeft   = Math.max(0,Math.ceil((RACE_DATE-new Date())/864e5));
+  const totalWeeks = Math.ceil((RACE_DATE-START_DATE)/(864e5*7));
+  const weeksLeft  = Math.max(0,Math.ceil(daysLeft/7));
+  const currentWeek= Math.max(1,totalWeeks-Math.ceil(daysLeft/7)+1);
+  const currentPhase=PHASES.find(p=>currentWeek>=p.weeks[0]&&currentWeek<=p.weeks[1])||PHASES[0];
+  return {daysLeft,totalWeeks,weeksLeft,currentWeek,currentPhase};
+}
+
+// ── SVG Charts ─────────────────────────────────────────────────────────────
+function lineChart(data, keyX, keysY, colors, width, height, formatY, reversed, refLines){
+  const pad={l:52,r:keysY.length>1?42:12,t:10,b:28};
+  const W=width-pad.l-pad.r, H=height-pad.t-pad.b;
+  if(!data.length) return `<svg width="${width}" height="${height}"></svg>`;
+  const scales = keysY.map((k,si)=>{
+    const vals=data.map(d=>d[k.key]).filter(v=>v!=null);
+    if(si===0 && refLines) refLines.forEach(rl=>vals.push(rl.y));
+    const rawMin=Math.min(...vals), rawMax=Math.max(...vals);
+    const buf=(rawMax-rawMin)*0.12||5;
+    const minV=rawMin-buf, maxV=rawMax+buf;
+    const range=maxV-minV||1;
+    const isRev = si===0 ? reversed : false;
+    const toY=v=> isRev ? pad.t+((v-minV)/range)*H : pad.t+H-((v-minV)/range)*H;
+    return {minV,maxV,range,toY,isRev};
+  });
+  const toX=i=>pad.l+i*(W/(data.length-1||1));
+  const s0=scales[0];
+  let svg=`<svg class="chart" width="${width}" height="${height}" style="display:block">`;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(H/4)*i;
+    svg+=`<line x1="${pad.l}" y1="${y}" x2="${pad.l+W}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
+    const val=s0.isRev ? s0.minV+(s0.range*i/4) : s0.maxV-(s0.range*i/4);
+    svg+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">${formatY?formatY(Math.round(val)):Math.round(val)}</text>`;
+  }
+  const step=Math.max(1,Math.ceil(data.length/8));
+  data.forEach((d,i)=>{
+    if(i%step===0||i===data.length-1){
+      svg+=`<text x="${toX(i)}" y="${pad.t+H+16}" text-anchor="middle" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">${d[keyX]}</text>`;
+    }
+  });
+  if(refLines) refLines.forEach(rl=>{
+    const ry=s0.toY(rl.y);
+    if(ry>=pad.t && ry<=pad.t+H){
+      svg+=`<line x1="${pad.l}" y1="${ry.toFixed(1)}" x2="${pad.l+W}" y2="${ry.toFixed(1)}" stroke="${rl.color}" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+      svg+=`<text x="${pad.l+W-2}" y="${(ry-4).toFixed(1)}" text-anchor="end" font-size="10" fill="${rl.color}" font-family="JetBrains Mono,monospace">${rl.label}</text>`;
+    }
+  });
+  keysY.forEach((k,si)=>{
+    const {toY}=scales[si];
+    const pts=data.map((d,i)=>[toX(i),toY(d[k.key])]).filter(([x,y])=>!isNaN(y));
+    if(!pts.length) return;
+    const path=pts.map((p,i)=>(i===0?"M":"L")+p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ");
+    svg+=`<path d="${path}" fill="none" stroke="${k.color}" stroke-width="${k.width||2}" ${k.dashed?'stroke-dasharray="5 3"':''} stroke-linejoin="round" stroke-linecap="round"/>`;
+    pts.forEach(([x,y])=>{svg+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${k.r||3}" fill="${k.color}"/>`;});
+  });
+  if(keysY.length>1){
+    const s1=scales[1];
+    for(let i=0;i<=4;i++){
+      const val=s1.minV+(s1.range*i/4);
+      const y=pad.t+H-((val-s1.minV)/s1.range)*H;
+      svg+=`<text x="${pad.l+W+4}" y="${y+4}" text-anchor="start" font-size="10" fill="${keysY[1].color}" font-family="JetBrains Mono,monospace">${Math.round(val)}</text>`;
+    }
+  }
+  svg+=`</svg>`;
+  return svg;
+}
+
+function barChart(data, keyX, keyY, color, width, height, formatY){
+  const pad={l:48,r:12,t:10,b:28};
+  const W=width-pad.l-pad.r, H=height-pad.t-pad.b;
+  if(!data.length) return `<svg width="${width}" height="${height}"></svg>`;
+  const vals=data.map(d=>d[keyY]);
+  const maxV=Math.max(...vals)||1;
+  const bw=Math.max(4,(W/data.length)*0.6);
+  const gap=(W/data.length);
+  let svg=`<svg class="chart" width="${width}" height="${height}" style="display:block">`;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(H/4)*i;
+    const v=maxV*(4-i)/4;
+    svg+=`<line x1="${pad.l}" y1="${y}" x2="${pad.l+W}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
+    svg+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">${formatY?formatY(Math.round(v)):Math.round(v)}</text>`;
+  }
+  const step=Math.max(1,Math.ceil(data.length/8));
+  data.forEach((d,i)=>{
+    const x=pad.l+i*gap+gap/2;
+    const h=(d[keyY]/maxV)*H;
+    const y=pad.t+H-h;
+    svg+=`<rect x="${(x-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,h).toFixed(1)}" fill="${color}" rx="2"/>`;
+    if(i%step===0||i===data.length-1){
+      svg+=`<text x="${x.toFixed(1)}" y="${pad.t+H+16}" text-anchor="middle" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">${d[keyX]}</text>`;
+    }
+  });
+  svg+=`</svg>`;
+  return svg;
+}
+
+function dualBarChart(data, keyX, key1, key2, color1, color2, width, height, formatY){
+  const pad={l:52,r:12,t:10,b:100};
+  const W=width-pad.l-pad.r, H=height-pad.t-pad.b;
+  if(!data.length) return `<svg width="${width}" height="${height}"></svg>`;
+  const maxV=Math.max(...data.flatMap(d=>[d[key1]||0,d[key2]||0]))||1;
+  const bw=Math.max(3,(W/data.length)*0.35);
+  const gap=W/data.length;
+  let svg=`<svg class="chart" width="${width}" height="${height}" style="display:block">`;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(H/4)*i;
+    svg+=`<line x1="${pad.l}" y1="${y}" x2="${pad.l+W}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
+    svg+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">${formatY?formatY(Math.round(maxV*(4-i)/4)):Math.round(maxV*(4-i)/4)}</text>`;
+  }
+  data.forEach((d,i)=>{
+    const cx=pad.l+i*gap+gap/2;
+    const h1=((d[key1]||0)/maxV)*H; const y1=pad.t+H-h1;
+    const h2=((d[key2]||0)/maxV)*H; const y2=pad.t+H-h2;
+    svg+=`<rect x="${(cx-bw-1).toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,h1).toFixed(1)}" fill="${color1}" rx="2" opacity="0.5"/>`;
+    svg+=`<rect x="${(cx+1).toFixed(1)}" y="${y2.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1,h2).toFixed(1)}" fill="${color2}" rx="2"/>`;
+    svg+=`<text transform="rotate(-45,${cx.toFixed(1)},${(pad.t+H+8).toFixed(1)})" x="${cx.toFixed(1)}" y="${(pad.t+H+8).toFixed(1)}" text-anchor="end" font-size="13" fill="#7a8ba3" font-family="Barlow,sans-serif">${d[keyX]}</text>`;
+  });
+  svg+=`<rect x="${pad.l}" y="${pad.t+H+66}" width="10" height="10" fill="${color1}" rx="1" opacity="0.5"/>`;
+  svg+=`<text x="${pad.l+13}" y="${pad.t+H+75}" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">Target</text>`;
+  svg+=`<rect x="${pad.l+60}" y="${pad.t+H+66}" width="10" height="10" fill="${color2}" rx="1"/>`;
+  svg+=`<text x="${pad.l+73}" y="${pad.t+H+75}" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">Actual</text>`;
+  svg+=`</svg>`;
+  return svg;
+}
+
+function statCard(label, val, valColor, sub, delta){
+  const d=el("div","stat-card");
+  d.innerHTML=`<div class="stat-label">${label}</div><div class="stat-val" style="color:${valColor}">${val}</div><div class="stat-sub">${sub}</div><div class="stat-delta">${delta}</div>`;
+  return d;
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────────────
+function buildDashboard(){
+  const rs=getRunStats(), bs=getBestStation(), ti=getTimeInfo();
+  const proj=getProjected(rs,bs);
+  const runsRemaining=ti.weeksLeft*5;
+  const avgDist=rs.totalDist/Math.max(1,state.runs.length);
+  const wrap=el("div");
+  // Current pace: avg of last 5 runs
+  const last5 = rs.sorted.slice(-5);
+  const recentPace = last5.length ? Math.round(last5.reduce((s,r)=>s+r.pace,0)/last5.length) : null;
+  const paceGap = recentPace ? recentPace - 320 : null;
+
+  // Form (TSB)
+  const dashLoad = computeLoad();
+  const dashMfff = state.manualFFF;
+  const dashTSB = dashMfff ? dashMfff.tsb : dashLoad.tsb;
+  const dashFreshLabel = dashTSB>=5?"Fresh & Ready":dashTSB>=-5?"Neutral":dashTSB>=-15?"Mod. Fatigue":"High Fatigue";
+  const dashFreshColor = dashTSB>=5?C.success:dashTSB>=-5?C.warn:C.danger;
+
+  // Stations on target
+  const stTotal = SEGMENTS.filter(s=>s.type==="station").length;
+  const stBenched = SEGMENTS.filter(s=>s.type==="station"&&bs[s.id]).length;
+  const stOnTarget = SEGMENTS.filter(s=>s.type==="station"&&bs[s.id]&&bs[s.id]<=s.target).length;
+
+  const grid=el("div","stat-grid");
+  grid.appendChild(statCard("Projected Time",fmt(proj),proj<=4800?C.success:C.warn,`Goal: ${fmt(4800)}`,proj<=4800?`${fmt(4800-proj)} ahead`:`${fmt(proj-4800)} to cut`));
+  grid.appendChild(statCard("Current Pace",recentPace?fmt(recentPace)+"/km":"—",recentPace&&recentPace<=320?C.success:C.warn,"Goal: 5:20/km · last 5 runs",paceGap===null?"No runs yet":paceGap<=0?`${fmt(-paceGap)} under goal`:`${fmt(paceGap)} to cut`));
+  grid.appendChild(statCard("Form (TSB)",(dashTSB>=0?"+":"")+dashTSB,dashFreshColor,dashFreshLabel,dashMfff?"From TrainingPeaks":"Est. from TSS logs"));
+  grid.appendChild(statCard("Stations On Target",`${stOnTarget}/${stTotal}`,stOnTarget>=6?C.success:stOnTarget>=3?C.warn:C.danger,`${stBenched} of ${stTotal} benchmarked`,stOnTarget===stTotal?"All on target!":stBenched<stTotal?`${stTotal-stBenched} not yet timed`:`${stTotal-stOnTarget} still over goal`));
+  wrap.appendChild(grid);
+
+  // ── Today's Workout ───────────────────────────────────────────────────────
+  const todayStr=(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;})();
+  const tomorrowStr=(()=>{const d=new Date();d.setDate(d.getDate()+1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;})();
+  const typeColors={easy:C.z2,long:C.run,tempo:C.accent,interval:C.tss,racepace:"#e63946",sim:"#7c3aed",strength:"#64748b",station:C.hr,rest:"#94a3b8",race:C.accent,mobility:"#94a3b8",other:C.dim};
+  const typeLabels={easy:"Easy Run",long:"Long Run",tempo:"Tempo Run",interval:"Intervals",racepace:"Race Pace",sim:"Hyrox Sim",strength:"Strength",station:"Station Work",rest:"Rest Day",race:"Race Day",mobility:"Mobility",other:"Workout"};
+  let todaySession=null, tomorrowSession=null, thisWeek=null;
+  for(const w of PLAN_WEEKS){
+    for(const d of w.days){
+      if(d.date===todayStr){todaySession=d;thisWeek=w;}
+      if(d.date===tomorrowStr) tomorrowSession=d;
+    }
+    if(todaySession) break;
+  }
+  if(todaySession){
+    const tc=typeColors[todaySession.type]||C.dim;
+    const todayCard=el("div","card");
+    todayCard.style.cssText=`border-left:4px solid ${tc};padding-left:14px`;
+
+    // Header row
+    const hdr=el("div");
+    hdr.style.cssText="display:flex;align-items:center;gap:10px;margin-bottom:10px";
+    hdr.innerHTML=`
+      <div class="card-label" style="margin-bottom:0">Today's Workout</div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 9px;border-radius:10px;background:${tc}18;color:${tc};border:1px solid ${tc}33">${typeLabels[todaySession.type]||todaySession.type}</span>
+      ${todaySession.tss>0?`<span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${C.tss}">${todaySession.tss} TSS planned</span>`:''}`;
+    todayCard.appendChild(hdr);
+
+    // Session description
+    const descDiv=el("div");
+    descDiv.style.cssText="font-size:15px;font-weight:600;color:#1a2332;line-height:1.5;margin-bottom:10px";
+    descDiv.textContent=todaySession.desc.replace(/·/g,'—').replace(/\n/g,' · ');
+    todayCard.appendChild(descDiv);
+
+    // Week mini-calendar strip
+    if(thisWeek){
+      const strip=el("div");
+      strip.style.cssText="display:flex;gap:4px;margin-bottom:10px";
+      thisWeek.days.forEach(d=>{
+        const isToday=d.date===todayStr;
+        const isPast=d.date<todayStr;
+        const dc=typeColors[d.type]||C.dim;
+        const pip=el("div");
+        pip.style.cssText=`flex:1;height:28px;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:${isToday?dc:isPast?dc+'22':dc+'11'};border:${isToday?`2px solid ${dc}`:`1px solid ${dc}33`}`;
+        pip.innerHTML=`<span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:${isToday?'#fff':isPast?dc:dc+'99'};font-weight:${isToday?700:400}">${d.day}</span>`;
+        pip.title=d.desc;
+        strip.appendChild(pip);
+      });
+      todayCard.appendChild(strip);
+    }
+
+    // Tomorrow preview
+    if(tomorrowSession&&tomorrowSession.type!=='rest'){
+      const tmw=el("div");
+      const tc2=typeColors[tomorrowSession.type]||C.dim;
+      tmw.style.cssText=`display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;border:1px solid ${C.border}`;
+      tmw.innerHTML=`<span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:${C.dim};text-transform:uppercase;letter-spacing:1px">Tomorrow</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:1px 7px;border-radius:8px;background:${tc2}18;color:${tc2};border:1px solid ${tc2}33">${typeLabels[tomorrowSession.type]}</span>
+        <span style="font-size:13px;color:#334155">${tomorrowSession.desc.slice(0,60).replace(/\n/g,' · ')}${tomorrowSession.desc.length>60?'…':''}</span>
+        ${tomorrowSession.tss>0?`<span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:${C.tss}">${tomorrowSession.tss} TSS</span>`:''}`;
+      todayCard.appendChild(tmw);
+    } else if(tomorrowSession&&tomorrowSession.type==='rest'){
+      const tmw=el("div");
+      tmw.style.cssText=`display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;border:1px solid ${C.border}`;
+      tmw.innerHTML=`<span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:${C.dim};text-transform:uppercase;letter-spacing:1px">Tomorrow</span><span style="font-size:13px;color:${C.dim}">Rest Day — recover well</span>`;
+      todayCard.appendChild(tmw);
+    }
+
+    wrap.appendChild(todayCard);
+  }
+
+  const phaseCard=el("div","card");
+  phaseCard.innerHTML=`<div class="card-label">Training Phase — Week ${ti.currentWeek} of ${ti.totalWeeks}</div>`;
+  const phaseBar=el("div","phase-bar");
+  PHASES.forEach(p=>{
+    const span=p.weeks[1]-p.weeks[0]+1;
+    const isA=ti.currentPhase.name===p.name;
+    const seg=el("div","phase-seg");
+    seg.style.width=`${span/ti.totalWeeks*100}%`;
+    seg.style.background=isA?p.color:p.color+"22";
+    seg.style.color=isA?"#fff":p.color+"99";
+    seg.textContent=`${p.name} (${span}w)`;
+    phaseBar.appendChild(seg);
+  });
+  phaseCard.appendChild(phaseBar);
+  const ticks=el("div","week-ticks");
+  for(let w=1;w<=ti.totalWeeks;w++){
+    const phase=PHASES.find(p=>w>=p.weeks[0]&&w<=p.weeks[1]);
+    const isCur=w===ti.currentWeek;
+    const t=el("div","week-tick");
+    t.style.width=`${100/ti.totalWeeks}%`;
+    const line=el("div","week-tick-line");
+    line.style.width=isCur?"3px":"1px";
+    line.style.height=isCur?"10px":"6px";
+    line.style.background=isCur?(phase?phase.color:C.accent):C.border;
+    t.appendChild(line);
+    if(isCur||w===1||w===ti.totalWeeks||w%4===0){
+      const num=el("div","week-tick-num",String(w));
+      num.style.color=isCur?(phase?phase.color:C.accent):C.dim;
+      num.style.fontWeight=isCur?"700":"400";
+      t.appendChild(num);
+    }
+    ticks.appendChild(t);
+  }
+  phaseCard.appendChild(ticks);
+  const focusLine=el("div","phase-focus",ti.currentPhase.focus);
+  focusLine.style.color=ti.currentPhase.color;
+  phaseCard.appendChild(focusLine);
+  wrap.appendChild(phaseCard);
+
+  // ── Race Segment Gap Bar ───────────────────────────────────────────────────
+  const gapCard=el("div","card");
+  gapCard.innerHTML=`<div class="card-label" style="margin-bottom:8px">Race Segment Status — Est. vs Target</div>`;
+
+  // Build segment bar
+  const segBar=el("div");
+  segBar.style.cssText="display:flex;gap:3px;height:36px;margin-bottom:8px";
+  SEGMENTS.forEach((seg,i)=>{
+    const isRun=seg.type==="run";
+    const est=isRun
+      ? rs.est1km+(parseInt(seg.id.replace("run",""))-1)*8
+      : bs[seg.id]||null;
+    const hasData=isRun||!!bs[seg.id];
+    const onTarget=hasData&&est<=seg.target;
+    const color=!hasData?C.border:onTarget?C.success:C.danger;
+    const bg=!hasData?"#f1f5f9":onTarget?C.success+"22":C.danger+"18";
+    const seg_el=el("div");
+    seg_el.style.cssText=`flex:1;border-radius:4px;background:${bg};border:1px solid ${color}44;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:default`;
+    seg_el.title=`${seg.name}\nTarget: ${fmt(seg.target)}\n${hasData?`Est: ${fmt(est)}\n${onTarget?'✓ On target':'⚠ '+fmt(est-seg.target)+' over'}`:'Not benchmarked'}`;
+    const numLabel=el("span");
+    numLabel.style.cssText=`font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:${color}`;
+    numLabel.textContent=String(i+1);
+    const typeLabel=el("span");
+    typeLabel.style.cssText=`font-family:'JetBrains Mono',monospace;font-size:8px;color:${!hasData?C.dim:color}`;
+    typeLabel.textContent=isRun?"R":"S";
+    seg_el.appendChild(numLabel);
+    seg_el.appendChild(typeLabel);
+    segBar.appendChild(seg_el);
+  });
+  gapCard.appendChild(segBar);
+
+  // Legend + summary row
+  const gapLegend=el("div");
+  gapLegend.style.cssText="display:flex;align-items:center;gap:16px;font-size:12px;font-family:'JetBrains Mono',monospace";
+  const onTgtCount=SEGMENTS.filter(s=>{
+    const est=s.type==="run"?rs.est1km+(parseInt(s.id.replace("run",""))-1)*8:bs[s.id]||null;
+    return (s.type==="run"||!!bs[s.id])&&est<=s.target;
+  }).length;
+  const overCount=SEGMENTS.filter(s=>{
+    const est=s.type==="run"?rs.est1km+(parseInt(s.id.replace("run",""))-1)*8:bs[s.id]||null;
+    return (s.type==="run"||!!bs[s.id])&&est>s.target;
+  }).length;
+  const unbenchedCount=SEGMENTS.filter(s=>s.type==="station"&&!bs[s.id]).length;
+  const timeToSave=SEGMENTS.reduce((acc,s)=>{
+    if(s.type==="station"&&bs[s.id]&&bs[s.id]>s.target) acc+=bs[s.id]-s.target;
+    return acc;
+  },0);
+  gapLegend.innerHTML=`
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${C.success}22;border:1px solid ${C.success};vertical-align:middle;margin-right:4px"></span><span style="color:${C.success}">${onTgtCount} on target</span></span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${C.danger}18;border:1px solid ${C.danger};vertical-align:middle;margin-right:4px"></span><span style="color:${C.danger}">${overCount} over</span></span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f1f5f9;border:1px solid ${C.border};vertical-align:middle;margin-right:4px"></span><span style="color:${C.dim}">${unbenchedCount} unbenchmarked</span></span>
+    ${timeToSave>0?`<span style="margin-left:auto;color:${C.danger}"><strong>${fmt(timeToSave)}</strong> to cut from over-target stations</span>`:''}`;
+  gapCard.appendChild(gapLegend);
+
+  // Flag the worst over-target segments
+  const overSegs=SEGMENTS.filter(s=>{
+    if(s.type==="run") return false;
+    return bs[s.id]&&bs[s.id]>s.target;
+  }).map(s=>({name:s.name,over:bs[s.id]-s.target})).sort((a,b)=>b.over-a.over);
+  if(overSegs.length){
+    const flagRow=el("div");
+    flagRow.style.cssText="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px";
+    overSegs.forEach(s=>{
+      const chip=el("span");
+      chip.style.cssText=`font-size:11px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:8px;background:${C.danger}10;color:${C.danger};border:1px solid ${C.danger}30`;
+      chip.textContent=`${s.name.replace("Burpee Broad Jumps","BBJ").replace("Farmers Carry","F.Carry").replace("Sandbag Lunges","SB Lunges")} +${fmt(s.over)}`;
+      flagRow.appendChild(chip);
+    });
+    gapCard.appendChild(flagRow);
+  }
+
+  wrap.appendChild(gapCard);
+
+  // ── Fitness · Fatigue · Form Summary ─────────────────────────────────────
+  const load=computeLoad();
+  const mfff=state.manualFFF;
+  const dCTL=mfff?mfff.ctl:load.ctl;
+  const dATL=mfff?mfff.atl:load.atl;
+  const dTSB=mfff?mfff.tsb:load.tsb;
+  const freshLabel=dTSB>=5?"Fresh & Ready":dTSB>=-5?"Neutral":dTSB>=-15?"Moderate Fatigue":"High Fatigue";
+  const freshColor=dTSB>=5?C.success:dTSB>=-5?C.warn:C.danger;
+  const tsbTrend=dTSB>=5?"Peaked / tapered":dTSB>=-5?"Balanced load":dTSB>=-15?"Building fatigue":"Overreached";
+  const fffDashCard=el("div","card");
+  fffDashCard.innerHTML=`<div class="card-label">Fitness · Fatigue · Form <span style="font-size:11px;color:#7a8ba3;font-family:'JetBrains Mono',monospace">${mfff?"— Manual (TP)":"— Auto-calc from TSS"}</span></div>`;
+  const fffDashGrid=el("div","stat-grid");
+  [
+    {l:"Fitness (CTL)", v:dCTL, c:C.run,       sub:"42-day rolling load", delta:"Chronic training load"},
+    {l:"Fatigue (ATL)", v:dATL, c:C.danger,     sub:"7-day rolling load",  delta:"Acute training load"},
+    {l:"Form (TSB)",    v:(dTSB>=0?"+":"")+dTSB, c:freshColor, sub:"Fitness − Fatigue", delta:tsbTrend},
+    {l:"Freshness",     v:freshLabel, c:freshColor, sub:mfff?"From TrainingPeaks":"Est. from TSS logs", delta:"", small:true},
+  ].forEach(s=>{
+    const d=el("div","stat-card");
+    d.innerHTML=`<div class="stat-label">${s.l}</div><div class="stat-val" style="color:${s.c};font-size:${s.small?'16px':'34px'}">${s.v}</div><div class="stat-sub">${s.sub}</div><div class="stat-delta">${s.delta}</div>`;
+    fffDashGrid.appendChild(d);
+  });
+  fffDashCard.appendChild(fffDashGrid);
+
+  // ── Per-metric recommendations (compact) ──────────────────────────────────
+  const ctlRanges=[
+    {lo:0,hi:24,label:"Low",color:C.danger,action:"Train consistently — 5 days/wk. Keep intensity low to moderate. Focus on building the habit before adding load."},
+    {lo:25,hi:49,label:"Building",color:C.warn,action:"Good progress. Keep adding volume. One long run per week. Add one tempo or interval session. Don't jump more than 5–7% volume per week."},
+    {lo:50,hi:79,label:"Strong",color:C.success,action:"Solid base. Layer in race-specific work: negative split runs, station circuits. Maintain volume — don't sacrifice it for intensity."},
+    {lo:80,hi:999,label:"Elite",color:C.z2,action:"High fitness. Shift toward quality — race-pace intervals, full HYROX simulations. Begin tapering 3 weeks before race."},
+  ];
+  const atlRanges=[
+    {lo:0,hi:dCTL-1,label:"Below CTL",color:C.success,action:"Light week — you're recovering. Good time to do a quality session or race simulation if TSB is also positive."},
+    {lo:dCTL,hi:dCTL+19,label:"Productive",color:C.warn,action:"Normal build zone. Training hard but not overreaching. Monitor sleep and recovery markers. Keep easy days truly easy."},
+    {lo:dCTL+20,hi:999,label:"High",color:C.danger,action:"Fatigue is spiking. Do not add more volume or intensity. Take 1–2 easy days, prioritize sleep (8+ hrs), and consider a deload week."},
+  ];
+  const tsbRanges=[
+    {lo:10,hi:999,label:"Peaked",color:C.success,action:"You're fresh and ready to race. Use this window for a hard time trial or race simulation. Don't let fitness decay — keep training."},
+    {lo:5,hi:9,label:"Fresh",color:C.success,action:"Great position. Push quality work this week: intervals, tempo runs, or station benchmarks."},
+    {lo:-5,hi:4,label:"Balanced",color:C.warn,action:"Normal training zone. Stick to your plan. No need to back off or add extra."},
+    {lo:-15,hi:-6,label:"Building Fatigue",color:C.warn,action:"Accumulating fatigue — expected in a build phase. Don't add more load. A deload week in the next 1–2 weeks is a good idea."},
+    {lo:-999,hi:-16,label:"Overreached",color:C.danger,action:"Stop adding load. Take a full deload week: cut volume 30–40%, drop intensity, prioritize sleep and nutrition."},
+  ];
+  const findRange=(ranges,val)=>ranges.find(r=>val>=r.lo&&val<=r.hi)||ranges[ranges.length-1];
+  const ctlRec=findRange(ctlRanges,dCTL);
+  const atlRec=findRange(atlRanges,dATL);
+  const tsbRec=findRange(tsbRanges,dTSB);
+
+  const recRow=el("div");
+  recRow.style.cssText="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px";
+  [
+    {label:"FITNESS (CTL)",color:C.run,rec:ctlRec},
+    {label:"FATIGUE (ATL)",color:C.danger,rec:atlRec},
+    {label:"FORM (TSB)",color:tsbRec.color,rec:tsbRec},
+  ].forEach(m=>{
+    const box=el("div");
+    box.style.cssText=`padding:10px 12px;border-radius:7px;background:${m.rec.color}10;border-left:3px solid ${m.rec.color}`;
+    box.innerHTML=`<div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${m.color};text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">${m.label} · ${m.rec.label}</div><div style="font-size:12px;color:#334155;line-height:1.6">${m.rec.action}</div>`;
+    recRow.appendChild(box);
+  });
+  fffDashCard.appendChild(recRow);
+
+  // ── Pace Trend (compact) ─────────────────────────────────────────────────
+  const paceCard=el("div","card");
+  paceCard.style.marginBottom="0";
+  paceCard.innerHTML=`<div class="card-label">Running Pace Trend (per km)</div>`;
+  const chartData=rs.sorted.map(r=>({date:r.date.slice(5),pace:r.pace}));
+  const chartWrap=el("div","chart-wrap");
+  chartWrap.style.width="100%";
+  chartWrap.innerHTML=lineChart(chartData,"date",[{key:"pace",color:C.run,width:2.5,r:3}],null,420,130,fmt,false,[{y:320,color:C.accent,label:"5:20 goal"}]);
+  paceCard.appendChild(chartWrap);
+  paceCard.innerHTML+=`<div style="display:flex;gap:16px;justify-content:center;margin-top:6px;font-size:11px;color:${C.dim}"><span>● <span style="color:${C.run}">Pace/km</span></span><span>┄ <span style="color:${C.accent}">5:20 goal</span></span></div>`;
+
+  // ── HR Zone Summary (compact) ─────────────────────────────────────────────
+  const lthr = state.lthr || 163;
+  const hrZoneCard = el("div","card");
+  hrZoneCard.style.marginBottom="0";
+  hrZoneCard.innerHTML = `<div class="card-label">HR Zone Distribution</div>`;
+  if(rs.sorted.length){
+    const zCount=[0,0,0,0,0,0];
+    rs.sorted.forEach(r=>zCount[getZone(r.avgHr,lthr)]++);
+    const total=rs.sorted.length;
+    const dashZonePaces={};
+    [1,2,3,4,5].forEach(z=>{
+      const zr=rs.sorted.filter(r=>getZone(r.avgHr,lthr)===z);
+      if(zr.length) dashZonePaces[z]=Math.round(zr.reduce((s,r)=>s+r.pace,0)/zr.length);
+    });
+    const zBar=el("div");
+    zBar.style.cssText="display:flex;height:18px;border-radius:4px;overflow:hidden;margin-bottom:10px";
+    [1,2,3,4,5].forEach(z=>{
+      if(!zCount[z]) return;
+      const pct=(zCount[z]/total*100).toFixed(1);
+      const seg=el("div");
+      seg.style.cssText=`width:${pct}%;background:${ZC[z]};display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;font-family:'JetBrains Mono',monospace`;
+      if(zCount[z]/total>0.08) seg.textContent=`Z${z}`;
+      zBar.appendChild(seg);
+    });
+    hrZoneCard.appendChild(zBar);
+    const legendWrap=el("div");
+    legendWrap.style.cssText="display:flex;flex-direction:column;gap:5px";
+    [1,2,3,4,5].forEach(z=>{
+      const row=el("div");
+      row.style.cssText="display:grid;grid-template-columns:14px 100px 1fr 55px 72px;align-items:center;gap:6px";
+      const dot=el("span");
+      dot.style.cssText=`display:inline-block;width:8px;height:8px;border-radius:2px;background:${ZC[z]}`;
+      const name=el("span");
+      name.style.cssText="font-size:12px;font-weight:600;color:#334155";
+      name.textContent=`Z${z} ${ZN[z]}`;
+      const bar=el("div");
+      bar.style.cssText="height:5px;background:#e8eef6;border-radius:3px;overflow:hidden";
+      const fill=el("div");
+      fill.style.cssText=`height:100%;width:${(zCount[z]/total*100).toFixed(1)}%;background:${ZC[z]};border-radius:3px`;
+      bar.appendChild(fill);
+      const cnt=el("span");
+      cnt.style.cssText="font-family:'JetBrains Mono',monospace;font-size:11px;color:#7a8ba3;text-align:right";
+      cnt.textContent=`${zCount[z]} (${(zCount[z]/total*100).toFixed(0)}%)`;
+      const pace=el("span");
+      pace.style.cssText=`font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${dashZonePaces[z]?ZC[z]:C.dim};text-align:right`;
+      pace.textContent=dashZonePaces[z]?`${fmt(dashZonePaces[z])}/km`:"—";
+      row.appendChild(dot); row.appendChild(name); row.appendChild(bar); row.appendChild(cnt); row.appendChild(pace);
+      legendWrap.appendChild(row);
+    });
+    hrZoneCard.appendChild(legendWrap);
+  } else {
+    hrZoneCard.innerHTML+=`<div class="empty">No runs logged yet</div>`;
+  }
+
+  // ── 2-column mid row ──────────────────────────────────────────────────────
+  const midRow=el("div");
+  midRow.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px";
+  midRow.appendChild(paceCard);
+  midRow.appendChild(hrZoneCard);
+  wrap.appendChild(midRow);
+
+  // ── FFF Summary (no guidance — see Load tab for detail) ───────────────────
+  wrap.appendChild(fffDashCard);
+
+  // ── Saved Plans ────────────────────────────────────────────────────────────
+  wrap.appendChild(buildSavedPlansCard());
+
+  return wrap;
+}
+
+// ── Running ────────────────────────────────────────────────────────────────
+function buildRunning(){
+  const rs=getRunStats(), ti=getTimeInfo();
+  const runsRemaining=ti.weeksLeft*5;
+  const avgMin=rs.totalMin/Math.max(1,state.runs.length);
+  const wrap=el("div");
+  const grid=el("div","stat-grid");
+  grid.appendChild(statCard("Best Pace",fmt(rs.bestPace)+"/km",rs.bestPace<=300?C.success:C.warn,"Target: 5:00/km",rs.bestPace<=300?"Target hit!":fmt(rs.bestPace-300)+" to drop"));
+  grid.appendChild(statCard("Avg Pace",fmt(rs.avgPace)+"/km",rs.avgPace<=320?C.success:C.run,"Race target: 5:20/km",rs.avgPace<=320?"On target":fmt(rs.avgPace-320)+" to drop"));
+  grid.appendChild(statCard("Total Runs",state.runs.length,C.bright,`~${runsRemaining} runs left`,`${ti.weeksLeft}w × 5/wk`));
+  grid.appendChild(statCard("Total Hours",(rs.totalMin/60).toFixed(1),C.z2,`~${Math.round(runsRemaining*avgMin/60)}hrs remaining`,`at ${Math.round(avgMin)}min/run avg`));
+  wrap.appendChild(grid);
+  const hrCard=el("div","card");
+  hrCard.innerHTML=`<div class="card-label">Heart Rate — Avg vs Max</div>`;
+  const hrData=rs.sorted.map(r=>({date:r.date.slice(5),avg:r.avgHr,max:r.maxHr}));
+  const hrWrap=el("div");
+  hrWrap.innerHTML=lineChart(hrData,"date",[{key:"max",color:C.danger+"88",width:1.5,r:2},{key:"avg",color:C.hr,width:2,r:3}],null,860,150,null,false);
+  hrCard.appendChild(hrWrap);
+  wrap.appendChild(hrCard);
+  const tssCard=el("div","card");
+  tssCard.innerHTML=`<div class="card-label">Training Stress Score (TSS)</div>`;
+  const tssData=rs.sorted.map(r=>({date:r.date.slice(5),tss:Math.min(r.tss,120)}));
+  const tssWrap=el("div");
+  tssWrap.innerHTML=barChart(tssData,"date","tss",C.tss,860,120,null);
+  tssCard.appendChild(tssWrap);
+  tssCard.innerHTML+=`<div style="font-size:13px;color:${C.dim};margin-top:4px;font-style:italic">TSS capped at 120 for display</div>`;
+  wrap.appendChild(tssCard);
+  const listLabel=el("div","card-label",`All Runs (${state.runs.length})`);
+  wrap.appendChild(listLabel);
+  const list=el("div","row-list");
+  [...state.runs].reverse().forEach(r=>{
+    const row=el("div","run-row");
+    row.innerHTML=`<span class="date">${r.date.slice(5)}</span><span class="name">${r.title}</span><span class="pace">${fmt(r.pace)}/km</span><span class="dist">${(r.dist/1000).toFixed(1)}km</span><span class="hr">♥${r.avgHr}</span>`;
+    list.appendChild(row);
+  });
+  wrap.appendChild(list);
+  return wrap;
+}
+
+// ── Race Splits ────────────────────────────────────────────────────────────
+function buildRaceSplits(){
+  const rs=getRunStats(), bs=getBestStation();
+  const bestRunPace=state.runs.length?Math.min(...state.runs.map(r=>r.pace)):null;
+  const wrap=el("div");
+  wrap.appendChild(el("div","card-label","16-Segment Pacing Plan"));
+  const list=el("div");
+  SEGMENTS.forEach((seg,i)=>{
+    const estRun=seg.type==="run"?rs.est1km+(parseInt(seg.id.replace("run",""))-1)*8:null;
+    const estSt=seg.type==="station"?bs[seg.id]||seg.target:null;
+    const est=estRun||estSt;
+    const bestVal=seg.type==="run"?bestRunPace:bs[seg.id]||null;
+    const delta=est!==null?est-seg.target:null;
+    const row=el("div","seg-row");
+    row.style.background=seg.weak?C.danger+"08":"#fff";
+    row.style.border=`1px solid ${seg.weak?C.danger+"22":C.border}`;
+    const numDiv=el("div","seg-num",String(i+1));
+    numDiv.style.background=seg.type==="run"?C.run+"22":seg.weak?C.danger+"22":C.accent+"1a";
+    numDiv.style.color=seg.type==="run"?C.run:seg.weak?C.danger:C.accent;
+    row.appendChild(numDiv);
+    const nameDiv=el("div");
+    nameDiv.innerHTML=`<div class="seg-name">${seg.name}${seg.weak?` <span style="font-size:12px;color:${C.danger};font-family:'JetBrains Mono',monospace">FOCUS</span>`:""}</div><div class="seg-detail">${seg.detail}</div>`;
+    row.appendChild(nameDiv);
+    row.appendChild(colDiv("TARGET",fmt(seg.target),C.accent));
+    row.appendChild(colDiv("EST.",est?fmt(est):"—",est?(est<=seg.target?C.success:C.bright):C.dim));
+    row.appendChild(colDiv("BEST",bestVal?fmt(bestVal):"—",bestVal?(bestVal<=seg.target?C.success:C.bright):C.dim));
+    const dColor=delta===null?C.dim:delta<=0?C.success:C.danger;
+    const dVal=delta===null?"—":delta<=0?`-${fmt(Math.abs(delta))}`:`+${fmt(delta)}`;
+    row.appendChild(colDiv("DELTA",dVal,dColor));
+    list.appendChild(row);
+  });
+  wrap.appendChild(list);
+  const proj=getProjected(rs,bs);
+  const runTotal=SEGMENTS.filter(s=>s.type==="run").reduce((a,s)=>a+(rs.est1km+(parseInt(s.id.replace("run",""))-1)*8),0);
+  const stTotal=SEGMENTS.filter(s=>s.type==="station").reduce((a,s)=>a+(bs[s.id]||s.target),0);
+  const footer=el("div","splits-footer");
+  footer.innerHTML=`<div class="sf-item"><span class="sf-label">RUNS: </span><span class="sf-val" style="color:${C.run}">${fmt(runTotal)}</span><span class="sf-label" style="margin-left:16px">STATIONS: </span><span class="sf-val" style="color:${C.accent}">${fmt(stTotal)}</span></div><div class="sf-item"><span class="sf-label">PROJECTED: </span><span class="sf-projected" style="color:${proj<=4800?C.success:C.warn}">${fmt(proj)}</span></div>`;
+  wrap.appendChild(footer);
+
+  // Est. vs Target — All Segments chart
+  const segCard=el("div","card");
+  segCard.innerHTML=`<div class="card-label">Est. vs Target — All Segments</div>`;
+  const segData=SEGMENTS.map(s=>{
+    const a=s.type==="run"?rs.est1km+(parseInt(s.id.replace("run",""))-1)*8:bs[s.id]||0;
+    const has=s.type==="run"||!!bs[s.id];
+    const clr=!has?C.dim+"33":a<=s.target?C.success:C.danger;
+    const name=s.name.replace("Burpee Broad Jumps","BBJ").replace("Farmers Carry","Carry").replace("Sandbag Lunges","Lunges").replace("Sled Push","S.Push").replace("Sled Pull","S.Pull").replace("Wall Balls","WBall");
+    return {name,target:s.target,actual:a,clr};
+  });
+  const dualWrap=el("div");
+  dualWrap.innerHTML=dualBarChart(segData,"name","target","actual",C.accent,null,860,300,fmt);
+  segCard.appendChild(dualWrap);
+  wrap.appendChild(segCard);
+
+  return wrap;
+}
+
+function colDiv(label, val, color){
+  const d=el("div","seg-col");
+  d.innerHTML=`<div class="col-label">${label}</div><div class="col-val" style="color:${color}">${val}</div>`;
+  return d;
+}
+
+// ── Log Station ────────────────────────────────────────────────────────────
+function buildLogStation(){
+  const wrap=el("div");
+  const form=el("div","log-form");
+  form.innerHTML=`<div class="log-form-title">Log Station Benchmark</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Date</label><input type="date" id="lf-date" value="${state.logForm.date}"></div>
+      <div class="form-field"><label>Station</label><select id="lf-seg">${SEGMENTS.filter(s=>s.type==="station").map(s=>`<option value="${s.id}"${s.id===state.logForm.segment?" selected":""}>${s.name}${s.weak?" ⚡":""}</option>`).join("")}</select></div>
+      <div class="form-field"><label>Time (m:ss)</label><input type="text" id="lf-time" placeholder="e.g. 4:30" value="${state.logForm.time}"></div>
+      <div class="form-field"><label>Notes</label><input type="text" id="lf-notes" placeholder="e.g. legs heavy" value="${state.logForm.notes}"></div>
+    </div>`;
+  const saveBtn=el("button","btn-primary",state.saved?"✓ Saved!":"Log Time");
+  saveBtn.onclick=()=>{
+    const timeStr=document.getElementById("lf-time").value.trim();
+    if(!timeStr) return;
+    const parts=timeStr.split(":").map(Number);
+    const sec=parts.length===2?parts[0]*60+parts[1]:parseInt(timeStr);
+    if(isNaN(sec)||sec<=0) return;
+    state.stations.push({id:Date.now(),segment:document.getElementById("lf-seg").value,time:sec,date:document.getElementById("lf-date").value,notes:document.getElementById("lf-notes").value});
+    store.set(SK.station,state.stations);
+    state.logForm={date:document.getElementById("lf-date").value,segment:document.getElementById("lf-seg").value,time:"",notes:""};
+    state.saved=true;
+    renderAll();
+    setTimeout(()=>{state.saved=false;},2000);
+  };
+  form.appendChild(saveBtn);
+  wrap.appendChild(form);
+  wrap.appendChild(el("div","card-label",`Station Logs (${state.stations.length})`));
+  if(!state.stations.length){
+    wrap.appendChild(el("div","empty","No station benchmarks yet — start timing your stations!"));
+  } else {
+    const tbl=el("div","log-table");
+    [...state.stations].reverse().forEach(l=>{
+      const seg=SEGMENTS.find(s=>s.id===l.segment);
+      const d=l.time-seg.target;
+      const row=el("div","log-row");
+      row.innerHTML=`<span class="lr-date">${l.date.slice(5)}</span><span class="lr-name">${seg.name}${seg.weak?` <span style="color:${C.danger}">⚡</span>`:""}</span><span class="lr-time">${fmt(l.time)}</span><span class="lr-delta" style="color:${d<=0?C.success:C.danger}">${d<=0?`-${fmt(-d)}`:`+${fmt(d)}`}</span><button class="lr-del" data-id="${l.id}">×</button>`;
+      tbl.appendChild(row);
+    });
+    tbl.addEventListener("click",e=>{
+      const btn=e.target.closest("[data-id]");
+      if(btn){state.stations=state.stations.filter(x=>x.id!==parseInt(btn.dataset.id));store.set(SK.station,state.stations);renderAll();}
+    });
+    wrap.appendChild(tbl);
+  }
+  return wrap;
+}
+
+// ── Sim Log ────────────────────────────────────────────────────────────────
+function buildSimLog(){
+  const wrap = el("div");
+  const GOAL = 4800; // 1:20:00
+
+  // Planned sims from PLAN_WEEKS
+  const plannedSims = [];
+  PLAN_WEEKS.forEach(w=>{
+    w.days.forEach(d=>{
+      if(d.type==="sim"){
+        const m = d.desc.match(/target\s+([\d:]+)/i);
+        let targetSec = null;
+        if(m){
+          const parts = m[1].split(":").map(Number);
+          targetSec = parts.length===3 ? parts[0]*3600+parts[1]*60+parts[2] : parts[0]*60+parts[1];
+        }
+        plannedSims.push({date:d.date, desc:d.desc, isHalf:d.desc.toLowerCase().includes("half"), targetSec});
+      }
+    });
+  });
+
+  function fmtSec(sec){
+    if(sec==null||isNaN(sec)) return "—";
+    const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=Math.round(sec%60);
+    if(h>0) return `${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    return `${m}:${String(s).padStart(2,"0")}`;
+  }
+  function parseSec(str){
+    if(!str) return null;
+    const parts = str.trim().split(":").map(Number);
+    if(parts.some(isNaN)) return null;
+    if(parts.length===3) return parts[0]*3600+parts[1]*60+parts[2];
+    if(parts.length===2) return parts[0]*60+parts[1];
+    return null;
+  }
+
+  const sortedSims = [...state.sims].sort((a,b)=>a.date.localeCompare(b.date));
+  const fullSims = sortedSims.filter(s=>s.type==="full");
+  const bestSim  = fullSims.length ? [...fullSims].sort((a,b)=>a.timeSec-b.timeSec)[0] : null;
+  const lastSim  = sortedSims.length ? sortedSims[sortedSims.length-1] : null;
+  const gapToGoal = bestSim ? bestSim.timeSec - GOAL : null;
+
+  // ── Stat cards ──
+  const statGrid = el("div","stat-grid");
+  const stats = [
+    {label:"Best Full Sim",   val: bestSim  ? fmtSec(bestSim.timeSec)  : "—", sub: bestSim  ? bestSim.date.slice(5) : "No full sims yet", color:""},
+    {label:"Last Sim",        val: lastSim  ? fmtSec(lastSim.timeSec) : "—", sub: lastSim  ? (lastSim.type==="full"?"Full":"Half Sim")+" · "+lastSim.date.slice(5) : "No sims yet", color:""},
+    {label:"Total Sims",      val: state.sims.length,  sub: `${fullSims.length} full · ${state.sims.length-fullSims.length} half`, color:""},
+    {label:"Gap to 1:20 Goal",val: gapToGoal!==null ? (gapToGoal>0?"+":"")+fmtSec(Math.abs(gapToGoal)) : "—", sub: gapToGoal!==null ? (gapToGoal<=0?"🎯 Goal achieved!":"to cut") : "Log a full sim", color: gapToGoal!==null&&gapToGoal<=0?C.success:""},
+  ];
+  stats.forEach(s=>{
+    const card=el("div","stat-card");
+    card.innerHTML=`<div class="stat-label">${s.label}</div><div class="stat-val" style="${s.color?"color:"+s.color:""}">${s.val}</div><div class="stat-sub">${s.sub}</div>`;
+    statGrid.appendChild(card);
+  });
+  wrap.appendChild(statGrid);
+
+  // ── Trend Chart ──
+  const chartCard = el("div","card");
+  chartCard.style.marginTop="10px";
+  const chartTitle = el("div","card-label","Simulation Time Trend");
+  chartCard.appendChild(chartTitle);
+
+  // Build chart SVG
+  const now = new Date();
+  const raceMs = RACE_DATE.getTime();
+  const allDates = new Set();
+  sortedSims.forEach(s=>allDates.add(s.date));
+  plannedSims.forEach(p=>allDates.add(p.date));
+  const sortedDates = [...allDates].sort();
+
+  if(!sortedDates.length){
+    chartCard.appendChild(el("div","empty","Log your first simulation to see your progress chart."));
+  } else {
+    // Build data points for chart
+    const W=860, H=200, pad={l:64,r:60,t:14,b:32};
+    const CW=W-pad.l-pad.r, CH=H-pad.t-pad.b;
+
+    // Time range: from first event (or 8 weeks before race) to race
+    const firstDate = new Date(sortedDates[0]+"T00:00:00");
+    const startMs = firstDate.getTime();
+    const spanMs = Math.max(raceMs-startMs, 864e5*7);
+
+    // Value range: 4500–6300 (1:15 to 1:45), with goal at 4800
+    // Include actual sim values + planned targets in range calc
+    const allVals = [GOAL];
+    sortedSims.forEach(s=>allVals.push(s.timeSec));
+    plannedSims.forEach(p=>{if(p.targetSec) allVals.push(p.targetSec);});
+    const rawMin=Math.min(...allVals)-120, rawMax=Math.max(...allVals)+120;
+    const vRange=rawMax-rawMin||600;
+    // Y is reversed: lower time = higher on chart (better)
+    const toX=dateStr=>{
+      const ms=new Date(dateStr+"T00:00:00").getTime();
+      return pad.l+((ms-startMs)/spanMs)*CW;
+    };
+    const toY=sec=>pad.t+((sec-rawMin)/vRange)*CH; // lower time = higher visually (inverted)
+
+    let svg=`<svg width="${W}" height="${H}" style="display:block;overflow:visible">`;
+    // Grid lines
+    for(let i=0;i<=4;i++){
+      const y=pad.t+(CH/4)*i;
+      const v=rawMin+(vRange*(4-i)/4);
+      svg+=`<line x1="${pad.l}" y1="${y}" x2="${pad.l+CW}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
+      svg+=`<text x="${pad.l-6}" y="${y+4}" text-anchor="end" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">${fmtSec(Math.round(v))}</text>`;
+    }
+
+    // Goal line at GOAL=4800
+    const goalY = toY(GOAL);
+    if(goalY>=pad.t && goalY<=pad.t+CH){
+      svg+=`<line x1="${pad.l}" y1="${goalY.toFixed(1)}" x2="${pad.l+CW}" y2="${goalY.toFixed(1)}" stroke="${C.success}" stroke-width="1.5" stroke-dasharray="6 4"/>`;
+      svg+=`<text x="${pad.l+CW+4}" y="${(goalY+4).toFixed(1)}" font-size="10" fill="${C.success}" font-family="JetBrains Mono,monospace">1:20</text>`;
+    }
+
+    // Planned sim markers (diamonds, gray)
+    plannedSims.forEach(p=>{
+      if(!p.targetSec) return;
+      const x=toX(p.date), y=toY(p.targetSec);
+      if(x<pad.l||x>pad.l+CW) return;
+      const r=6;
+      svg+=`<polygon points="${x},${y-r} ${x+r},${y} ${x},${y+r} ${x-r},${y}" fill="none" stroke="${C.dim}" stroke-width="1.5"/>`;
+      svg+=`<title>${p.desc}\n${fmtSec(p.targetSec)} target</title>`;
+    });
+
+    // Connecting line for logged full sims
+    if(fullSims.length>1){
+      const pts=fullSims.map(s=>`${toX(s.date).toFixed(1)},${toY(s.timeSec).toFixed(1)}`).join(" ");
+      svg+=`<polyline points="${pts}" fill="none" stroke="${C.run}" stroke-width="2" stroke-linejoin="round"/>`;
+    }
+
+    // Logged sim dots
+    sortedSims.forEach(s=>{
+      const x=toX(s.date), y=toY(s.timeSec);
+      const isFull=s.type==="full";
+      const color=isFull?C.run:C.accent;
+      if(isFull){
+        svg+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" fill="${color}" stroke="white" stroke-width="1.5"/>`;
+      } else {
+        svg+=`<rect x="${(x-5).toFixed(1)}" y="${(y-5).toFixed(1)}" width="10" height="10" rx="2" fill="${color}" stroke="white" stroke-width="1.5"/>`;
+      }
+      svg+=`<title>${s.date} · ${s.type==="full"?"Full":"Half"} Sim · ${fmtSec(s.timeSec)}${s.notes?" · "+s.notes:""}</title>`;
+    });
+
+    // X axis labels: month ticks
+    const months=[];
+    const fd=new Date(firstDate); fd.setDate(1);
+    while(fd.getTime()<=raceMs){
+      months.push(new Date(fd));
+      fd.setMonth(fd.getMonth()+1);
+    }
+    months.forEach(m=>{
+      const ds=`${m.getFullYear()}-${String(m.getMonth()+1).padStart(2,"0")}-01`;
+      const x=toX(ds);
+      if(x<pad.l||x>pad.l+CW) return;
+      const label=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m.getMonth()];
+      svg+=`<line x1="${x.toFixed(1)}" y1="${pad.t}" x2="${x.toFixed(1)}" y2="${pad.t+CH+4}" stroke="#e2e8f0" stroke-width="1"/>`;
+      svg+=`<text x="${x.toFixed(1)}" y="${pad.t+CH+16}" text-anchor="middle" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">${label}</text>`;
+    });
+
+    svg+=`</svg>`;
+    chartCard.innerHTML+=svg;
+
+    // Legend
+    const leg=el("div","");
+    leg.style.cssText="display:flex;gap:16px;margin-top:6px;font-size:11px;color:var(--dim)";
+    leg.innerHTML=`<span>● Full sim</span><span style="color:${C.accent}">■ Half sim</span><span style="color:${C.dim}">◇ Planned target</span><span style="color:${C.success}">— 1:20 goal</span>`;
+    chartCard.appendChild(leg);
+  }
+  wrap.appendChild(chartCard);
+
+  // ── Log Form ──
+  const form = el("div","log-form");
+  form.style.marginTop="10px";
+  form.innerHTML=`<div class="log-form-title">Log Hyrox Simulation</div>
+    <div class="form-grid">
+      <div class="form-field"><label>Date</label><input type="date" id="sf-date" value="${state.simForm.date}"></div>
+      <div class="form-field"><label>Type</label><select id="sf-type">
+        <option value="full"${state.simForm.type==="full"?" selected":""}>Full Hyrox (8 runs + 8 stations)</option>
+        <option value="half"${state.simForm.type==="half"?" selected":""}>Half Hyrox (4 runs + 4 stations)</option>
+      </select></div>
+      <div class="form-field"><label>Total Time (h:mm:ss or m:ss)</label><input type="text" id="sf-time" placeholder="e.g. 1:28:30" value="${state.simForm.time}"></div>
+      <div class="form-field"><label>Notes</label><input type="text" id="sf-notes" placeholder="e.g. ran strong, legs faded on station 6" value="${state.simForm.notes}"></div>
+    </div>`;
+  const saveBtn = el("button","btn-primary",state.simSaved?"✓ Saved!":"Log Simulation");
+  saveBtn.onclick=()=>{
+    const timeStr=document.getElementById("sf-time").value.trim();
+    const timeSec=parseSec(timeStr);
+    if(!timeSec||timeSec<=0){alert("Enter a valid time (e.g. 1:28:30 or 88:30)");return;}
+    const newSim={id:Date.now(),date:document.getElementById("sf-date").value,type:document.getElementById("sf-type").value,timeSec,notes:document.getElementById("sf-notes").value};
+    state.sims.push(newSim);
+    store.set(SK.sims,state.sims);
+    state.simForm={date:document.getElementById("sf-date").value,type:document.getElementById("sf-type").value,time:"",notes:""};
+    state.simSaved=true;
+    renderAll();
+    setTimeout(()=>{state.simSaved=false;},2000);
+  };
+  form.appendChild(saveBtn);
+  wrap.appendChild(form);
+
+  // ── Planned Sims Schedule ──
+  const upcomingPlan = plannedSims.filter(p=>p.date>=today());
+  if(upcomingPlan.length){
+    const planCard=el("div","card");
+    planCard.style.marginTop="10px";
+    planCard.appendChild(el("div","card-label","Planned Simulations"));
+    const tbl=el("div","log-table");
+    upcomingPlan.forEach(p=>{
+      const logged=state.sims.find(s=>s.date===p.date);
+      const row=el("div","log-row");
+      const daysAway=Math.ceil((new Date(p.date+"T00:00:00")-new Date())/864e5);
+      row.innerHTML=`<span class="lr-date">${p.date.slice(5)}</span><span class="lr-name">${p.isHalf?"Half Sim":"Full Sim"}</span><span class="lr-time" style="color:${C.dim}">${p.targetSec?fmtSec(p.targetSec)+" target":"—"}</span><span class="lr-delta" style="color:${C.dim}">in ${daysAway}d</span><span style="font-size:11px;color:${logged?C.success:C.dim}">${logged?"✓ logged":"—"}</span>`;
+      tbl.appendChild(row);
+    });
+    planCard.appendChild(tbl);
+    wrap.appendChild(planCard);
+  }
+
+  // ── History ──
+  wrap.appendChild(el("div","card-label",`Simulation History (${state.sims.length})`));
+  if(!state.sims.length){
+    wrap.appendChild(el("div","empty","No simulations logged yet. Use the form above to record your first Hyrox sim!"));
+  } else {
+    const tbl=el("div","log-table");
+    [...sortedSims].reverse().forEach(s=>{
+      const gap=s.type==="full" ? s.timeSec-GOAL : null;
+      const row=el("div","log-row");
+      row.innerHTML=`<span class="lr-date">${s.date.slice(5)}</span><span class="lr-name">${s.type==="full"?"Full Sim":"Half Sim"}</span><span class="lr-time">${fmtSec(s.timeSec)}</span><span class="lr-delta" style="color:${gap===null?C.dim:gap<=0?C.success:C.danger}">${gap===null?"—":gap>0?"+"+fmtSec(gap):"-"+fmtSec(-gap)}</span><span class="lr-notes">${s.notes||""}</span><button class="lr-del" data-id="${s.id}">×</button>`;
+      tbl.appendChild(row);
+    });
+    tbl.addEventListener("click",e=>{
+      const btn=e.target.closest("[data-id]");
+      if(btn){state.sims=state.sims.filter(x=>x.id!==parseInt(btn.dataset.id));store.set(SK.sims,state.sims);renderAll();}
+    });
+    wrap.appendChild(tbl);
+  }
+
+  return wrap;
+}
+
+// ── Plan Generator ─────────────────────────────────────────────────────────
+function generatePlan(cfg){
+  const MS=86400000, DNAMES=["Mon","Tue","Wed","Thu","Fri","Sat"];
+  const today=new Date(); today.setHours(0,0,0,0);
+  const race=new Date(cfg.raceDate+"T00:00:00"); race.setHours(0,0,0,0);
+  // Start next Monday
+  const dow=today.getDay();
+  const toMon=dow===1?0:dow===0?1:8-dow;
+  const start=new Date(today.getTime()+toMon*MS);
+  const totalWeeks=Math.max(4,Math.ceil((race-start)/(7*MS)));
+
+  // Phase split indices (0-based week numbers)
+  const p1end=Math.round(totalWeeks*0.28);
+  const p2end=Math.round(totalWeeks*0.55);
+  const p3end=Math.round(totalWeeks*0.82);
+  const p4end=totalWeeks-1;
+  function phaseName(w){
+    if(w<p1end) return "Phase 1";
+    if(w<p2end) return "Phase 2";
+    if(w<p3end) return "Phase 3";
+    if(w<p4end) return "Phase 4";
+    return "Race Week";
+  }
+
+  // TSS ramp
+  const tssStart={beginner:130,intermediate:190,advanced:250}[cfg.level];
+  const tssPeak={beginner:330,intermediate:470,advanced:570}[cfg.level];
+  const peakWk=Math.round(totalWeeks*0.78);
+
+  // Active training days per week (always Mon=0 and Sat=5 anchored)
+  const slots={3:[0,2,5],4:[0,2,3,5],5:[0,1,3,4,5],6:[0,1,2,3,4,5]};
+  const activeSlots=slots[Math.min(6,Math.max(3,cfg.daysPerWeek))];
+
+  // Station rotation (cycle through emphasising weak ones first)
+  const allStations=["SkiErg","Rowing","Sled Push/Pull","Burpee Broad Jumps","Farmers Carry","Sandbag Lunges","Wall Balls","Weighted Lunges"];
+  const weakFirst=[...cfg.weakStations,...allStations.filter(s=>!cfg.weakStations.includes(s))];
+
+  // Tempo / interval paces based on target
+  const tMin=cfg.targetMin;
+  const tPace=tMin<=65?"4:10":tMin<=75?"4:20":tMin<=85?"4:35":tMin<=95?"4:50":"5:10";
+  const ePace=tMin<=65?"4:40":tMin<=75?"4:55":tMin<=85?"5:10":tMin<=95?"5:30":"5:50";
+
+  function stationDesc(w){
+    const s=weakFirst[w%weakFirst.length]||"SkiErg";
+    const vol=`${3+Math.floor(w/4)}×${200+Math.floor(w/3)*100}m`;
+    return `${s} · ${vol}`;
+  }
+  function strengthDesc(phase){
+    return {
+      "Phase 1":`Strength Circuit · 3×10 squats, rows, push-ups`,
+      "Phase 2":`Strength Circuit · 4×8 compound lifts`,
+      "Phase 3":`Strength + Metcon · 5×5 heavy + AMRAP`,
+      "Phase 4":`Strength Maintenance · 3×5 light`,
+      "Race Week":`Light Activation · mobility + 2×8 squats`,
+    }[phase]||"Strength";
+  }
+  function sessionDesc(type,w,phase){
+    const eMin=Math.min(cfg.maxMin,30+Math.floor(w/2)*2);
+    const lMin=Math.min(cfg.maxMin,45+Math.floor(w/1.5)*3);
+    const tMin2=Math.min(cfg.maxMin,20+Math.floor(w/3)*5);
+    const reps=Math.min(12,4+Math.floor(w/4));
+    return {
+      easy:`Easy Run ${eMin}min · HR Zone 2`,
+      long:`Long Run ${lMin}min · Easy pace (${ePace}/km)`,
+      tempo:`Tempo Run ${tMin2}min · (${tPace}/km)`,
+      interval:`Interval Run · ${reps}×1km @ ${tPace}/km`,
+      racepace:`Race-pace Run · ${Math.min(8,3+Math.floor(w/6))}×1km @ ${tPace}/km`,
+      sim:cfg.raceType==="full"?`Full Hyrox Sim`:`Half-Hyrox Sim (4 runs + 4 stations)`,
+      station:stationDesc(w),
+      strength:strengthDesc(phase),
+      rest:"REST",
+      race:`RACE DAY 🏅 ${cfg.raceType==="full"?"Full":"Half"} HYROX`,
+    }[type]||type;
+  }
+  function sessionTSS(type,weekTSS,isDeload){
+    const m=isDeload?0.55:1;
+    const map={easy:Math.round(weekTSS*0.20*m),long:Math.round(weekTSS*0.35*m),tempo:Math.round(weekTSS*0.26*m),interval:Math.round(weekTSS*0.30*m),racepace:Math.round(weekTSS*0.27*m),sim:cfg.raceType==="full"?110:85,station:Math.round(weekTSS*0.17*m),strength:Math.round(weekTSS*0.12*m),rest:0,race:0};
+    return Math.max(0,map[type]||20);
+  }
+  // Session type assignment per slot position
+  function slotType(slotIdx,n,phase,w,hasSim){
+    if(phase==="Race Week") return slotIdx===0?"easy":"rest";
+    if(hasSim&&slotIdx===1) return "sim";
+    const patterns={
+      "Phase 1":{0:"easy",1:"station",2:"strength",3:"long",4:"easy",5:"long"},
+      "Phase 2":{0:"tempo",1:"station",2:"strength",3:"easy",4:"station",5:"long"},
+      "Phase 3":{0:"interval",1:"station",2:"strength",3:"easy",4:"station",5:"long"},
+      "Phase 4":{0:"racepace",1:"station",2:"strength",3:"easy",4:"rest",5:"long"},
+    };
+    const p=patterns[phase]||patterns["Phase 1"];
+    // Last slot is always long run
+    if(slotIdx===n-1) return "long";
+    return p[slotIdx]||"easy";
+  }
+
+  const weeks=[];
+  for(let w=0;w<totalWeeks;w++){
+    const wStart=new Date(start.getTime()+w*7*MS);
+    const phase=phaseName(w);
+    const isDeload=(w+1)%4===0&&phase!=="Race Week";
+    const isRaceWeek=phase==="Race Week";
+    const ramp=Math.min(1,w/peakWk);
+    const base=tssStart+(tssPeak-tssStart)*ramp;
+    const weekTSS=isDeload?base*0.55:isRaceWeek?tssStart*0.25:base;
+    // Sims in Phase 3 every ~4 weeks on slot 1
+    const hasSim=phase==="Phase 3"&&w%4===2;
+    const days=[];
+    let si=0;
+    for(let d=0;d<6;d++){
+      const dayDate=new Date(wStart.getTime()+d*MS);
+      const dayStr=dayDate.toISOString().slice(0,10);
+      const isRaceDay=dayStr===cfg.raceDate;
+      let type,desc,tss;
+      if(isRaceDay){type="race";desc=sessionDesc("race",w,phase);tss=0;}
+      else if(isRaceWeek&&d>3){type="rest";desc="REST";tss=0;}
+      else if(activeSlots.includes(d)){
+        type=slotType(si,activeSlots.length,phase,w,hasSim);
+        desc=sessionDesc(type,w,phase);
+        tss=sessionTSS(type,weekTSS,isDeload);
+        si++;
+      } else {type="rest";desc="REST";tss=0;}
+      days.push({day:DNAMES[d],date:dayStr,desc,type,tss});
+    }
+    weeks.push({week:w+1,phase,startDate:wStart.toISOString().slice(0,10),days,weeklyTSS:days.reduce((s,d)=>s+d.tss,0)});
+  }
+  return weeks;
+}
+
+// ── Saved Plans (reusable card, used on Dashboard) ─────────────────────────
+function buildSavedPlansCard(){
+  const plansCard=el("div","card");
+  plansCard.innerHTML=`<div class="card-label">Saved Training Plans (${state.plans.length})</div>`;
+  const plansList=el("div","log-table");
+  state.plans.forEach(p=>{
+    const isActive=p.id===state.activePlanId;
+    const row=el("div","log-row");
+    row.style.cssText=`align-items:center;${isActive?`background:${C.accent}08;border-left:3px solid ${C.accent};padding-left:9px`:""}`;
+    const nameSpan=el("span","lr-name");
+    nameSpan.innerHTML=`${isActive?`<span style="color:${C.accent};font-weight:700">▶ </span>`:""}${p.name}`;
+    const metaSpan=el("span","lr-date",p.raceDate?p.raceDate.slice(5).replace("-","/"):"");
+    const wksSpan=el("span","lr-time",`${p.weeks?p.weeks.length:"34"}w`);
+    const cfgSpan=el("span","lr-notes",p.cfg?`${p.cfg.level} · ${p.cfg.daysPerWeek}d/wk`:"Default plan");
+    row.appendChild(nameSpan); row.appendChild(metaSpan); row.appendChild(wksSpan); row.appendChild(cfgSpan);
+    if(!isActive){
+      const switchBtn=el("button","btn-primary","Switch");
+      switchBtn.style.cssText="font-size:11px;padding:3px 10px";
+      switchBtn.onclick=()=>switchPlan(p.id);
+      row.appendChild(switchBtn);
+    } else {
+      const badge=el("span");
+      badge.style.cssText=`font-size:11px;font-family:'JetBrains Mono',monospace;color:${C.accent};font-weight:700`;
+      badge.textContent="Active";
+      row.appendChild(badge);
+    }
+    if(p.id!=="default"){
+      const delBtn=el("button","lr-del","×");
+      delBtn.onclick=()=>{
+        if(!confirm(`Delete plan "${p.name}"?`)) return;
+        state.plans=state.plans.filter(x=>x.id!==p.id);
+        if(state.activePlanId===p.id) switchPlan("default");
+        else{ store.set(SK.plans,state.plans); renderAll(); }
+      };
+      row.appendChild(delBtn);
+    }
+    plansList.appendChild(row);
+  });
+  plansCard.appendChild(plansList);
+  const newPlanBtn=el("button","btn-primary","+ Generate New Plan");
+  newPlanBtn.style.cssText="margin-top:10px;font-size:12px;padding:6px 14px";
+  newPlanBtn.onclick=()=>{state.tab="New Plan";renderAll();};
+  plansCard.appendChild(newPlanBtn);
+  return plansCard;
+}
+
+// ── New Plan tab ────────────────────────────────────────────────────────────
+function buildNewPlan(){
+  const wrap=el("div");
+  const cfg=state.planFormCfg;
+  const pgCard=el("div","card");
+  pgCard.innerHTML=`<div class="card-label">Generate a New Training Plan</div>
+  <div style="font-size:12px;color:#7a8ba3;margin-bottom:16px">Fill in the details below to generate a personalised Hyrox training plan. It will be saved alongside any existing plans and set as active.</div>`;
+
+  const pgForm=el("div");
+  pgForm.style.cssText="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px";
+
+  function field(label,id,html){
+    const f=el("div","form-field");
+    f.innerHTML=`<label>${label}</label>${html}`;
+    return f;
+  }
+
+  pgForm.appendChild(field("Plan Name","pg-name",`<input type="text" id="pg-name" placeholder="e.g. Chicago HYROX 2027" value="">`));
+  pgForm.appendChild(field("Race Date","pg-raceDate",`<input type="date" id="pg-raceDate" value="${cfg.raceDate}">`));
+  pgForm.appendChild(field("Target Finish Time","pg-target",`<select id="pg-target">
+    <option value="65" ${cfg.targetMin===65?"selected":""}>Under 1:05</option>
+    <option value="75" ${cfg.targetMin===75?"selected":""}>Under 1:15</option>
+    <option value="80" ${cfg.targetMin===80?"selected":""}>Under 1:20</option>
+    <option value="90" ${cfg.targetMin===90?"selected":""}>Under 1:30</option>
+    <option value="105" ${cfg.targetMin===105?"selected":""}>Under 1:45</option>
+    <option value="120" ${cfg.targetMin===120?"selected":""}>Completion goal</option>
+  </select>`));
+  pgForm.appendChild(field("Race Type","pg-raceType",`<select id="pg-raceType">
+    <option value="full" ${cfg.raceType==="full"?"selected":""}>Full HYROX (8 runs + 8 stations)</option>
+    <option value="half" ${cfg.raceType==="half"?"selected":""}>Half HYROX (4 runs + 4 stations)</option>
+  </select>`));
+  pgForm.appendChild(field("Current Weekly Distance (km)","pg-weeklyKm",`<input type="number" id="pg-weeklyKm" min="0" max="200" value="${cfg.weeklyKm}">`));
+  pgForm.appendChild(field("Longest Recent Run (km)","pg-longestKm",`<input type="number" id="pg-longestKm" min="1" max="50" value="${cfg.longestKm}">`));
+  pgForm.appendChild(field("Fitness Level","pg-level",`<select id="pg-level">
+    <option value="beginner" ${cfg.level==="beginner"?"selected":""}>Beginner</option>
+    <option value="intermediate" ${cfg.level==="intermediate"?"selected":""}>Intermediate</option>
+    <option value="advanced" ${cfg.level==="advanced"?"selected":""}>Advanced</option>
+  </select>`));
+  pgForm.appendChild(field("Training Days Per Week","pg-days",`<select id="pg-days">
+    <option value="3" ${cfg.daysPerWeek===3?"selected":""}>3 days/week</option>
+    <option value="4" ${cfg.daysPerWeek===4?"selected":""}>4 days/week</option>
+    <option value="5" ${cfg.daysPerWeek===5?"selected":""}>5 days/week</option>
+    <option value="6" ${cfg.daysPerWeek===6?"selected":""}>6 days/week</option>
+  </select>`));
+  pgForm.appendChild(field("Max Session Length","pg-maxMin",`<select id="pg-maxMin">
+    <option value="45" ${cfg.maxMin===45?"selected":""}>45 min</option>
+    <option value="60" ${cfg.maxMin===60?"selected":""}>60 min</option>
+    <option value="75" ${cfg.maxMin===75?"selected":""}>75 min</option>
+    <option value="90" ${cfg.maxMin===90?"selected":""}>90 min</option>
+    <option value="120" ${cfg.maxMin===120?"selected":""}>120 min</option>
+  </select>`));
+  pgForm.appendChild(field("Age","pg-age",`<input type="number" id="pg-age" min="16" max="80" value="${cfg.age}">`));
+  pgCard.appendChild(pgForm);
+
+  const stationNames=["SkiErg","Rowing","Sled Push/Pull","Burpee Broad Jumps","Farmers Carry","Sandbag Lunges","Wall Balls","Weighted Lunges"];
+  const weakWrap=el("div","form-field");
+  weakWrap.style.cssText="margin-top:12px";
+  weakWrap.innerHTML=`<label>Weakest Stations (prioritised in the plan)</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${stationNames.map(s=>`<label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:400;cursor:pointer"><input type="checkbox" value="${s}" ${cfg.weakStations.includes(s)?"checked":""}> ${s}</label>`).join("")}</div>`;
+  pgCard.appendChild(weakWrap);
+
+  const genBtn=el("button","btn-primary","⚡ Generate & Save Training Plan");
+  genBtn.style.cssText="margin-top:16px;width:100%;font-size:14px;padding:12px";
+  genBtn.onclick=()=>{
+    const raceDateVal=document.getElementById("pg-raceDate").value;
+    const planName=document.getElementById("pg-name").value.trim()||`HYROX Plan — ${raceDateVal}`;
+    const newCfg={
+      raceDate:raceDateVal,
+      targetMin:parseInt(document.getElementById("pg-target").value),
+      raceType:document.getElementById("pg-raceType").value,
+      weeklyKm:parseFloat(document.getElementById("pg-weeklyKm").value)||20,
+      longestKm:parseFloat(document.getElementById("pg-longestKm").value)||10,
+      level:document.getElementById("pg-level").value,
+      daysPerWeek:parseInt(document.getElementById("pg-days").value),
+      maxMin:parseInt(document.getElementById("pg-maxMin").value),
+      age:parseInt(document.getElementById("pg-age").value)||30,
+      weakStations:[...weakWrap.querySelectorAll("input[type=checkbox]:checked")].map(c=>c.value),
+    };
+    if(!newCfg.raceDate){alert("Please enter a race date.");return;}
+    const weeks=generatePlan(newCfg);
+    if(!weeks||weeks.length<2){alert("Race date must be at least 4 weeks away.");return;}
+    const newPlan={id:Date.now(),name:planName,raceDate:newCfg.raceDate,createdAt:today(),cfg:newCfg,weeks};
+    state.plans.push(newPlan);
+    store.set(SK.plans,state.plans);
+    switchPlan(newPlan.id);
+    state.tab="Training Plan";
+    renderAll();
+  };
+  pgCard.appendChild(genBtn);
+  wrap.appendChild(pgCard);
+  return wrap;
+}
+
+// ── Import ─────────────────────────────────────────────────────────────────
+function buildImport(){
+  const wrap=el("div");
+
+  const ahDz=el("div","drop-zone");
+  ahDz.innerHTML=`<input type="file" accept=".xml" id="ah-input" style="display:none"><div class="dz-icon">🍎</div><div class="dz-title">DROP APPLE HEALTH XML HERE</div><div class="dz-sub">or click to browse — select export.xml from your Health export</div><div class="dz-note">Imports running workouts, HRV, resting heart rate, and VO2 max. Deduplicated by date.</div>`;
+  ahDz.addEventListener("dragover",e=>{e.preventDefault();ahDz.classList.add("over")});
+  ahDz.addEventListener("dragleave",()=>ahDz.classList.remove("over"));
+  ahDz.addEventListener("drop",e=>{e.preventDefault();ahDz.classList.remove("over");const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)handleAppleHealth(f);});
+  ahDz.addEventListener("click",()=>document.getElementById("ah-input").click());
+  document.addEventListener("change",e=>{if(e.target&&e.target.id==="ah-input"&&e.target.files&&e.target.files[0])handleAppleHealth(e.target.files[0]);},{once:true});
+  wrap.appendChild(ahDz);
+
+  if(state.ahStatus){
+    const st=state.ahStatus;
+    const div=el("div","import-status "+st.state);
+    div.innerHTML=`<div class="is-title">${st.state==="success"?"✓ Apple Health Import Complete":st.state==="progress"?"⏳ Parsing in background...":"✗ Import Failed"}</div><div class="is-msg" id="ah-progress-msg">${st.msg}</div>${st.detail?`<div class="is-detail">${st.detail}</div>`:""}`;
+    wrap.appendChild(div);
+  }
+
+  // Apple Health summary card
+  const ahSumCard=el("div","card");
+  ahSumCard.innerHTML=`<div class="card-label">Apple Health Data</div><div class="data-summary">
+    <div class="ds-item"><div class="ds-val" style="color:${C.run}">${state.runs.filter(r=>r.source==="ah").length}</div><div class="ds-label">Runs (AH)</div></div>
+    <div class="ds-item"><div class="ds-val" style="color:${C.hr}">${state.hrv.length}</div><div class="ds-label">HRV Readings</div></div>
+    <div class="ds-item"><div class="ds-val" style="color:${C.danger}">${state.restingHR.length}</div><div class="ds-label">Resting HR</div></div>
+    <div class="ds-item"><div class="ds-val" style="color:${C.success}">${state.vo2max.length}</div><div class="ds-label">VO2 Max</div></div>
+  </div>
+  ${state.vo2max.length?`<div class="date-range">Latest VO2 Max: <code>${state.vo2max[state.vo2max.length-1].value} mL/min/kg</code></div>`:""}`;
+  wrap.appendChild(ahSumCard);
+
+  const ahGuide=el("div","tp-guide");
+  ahGuide.innerHTML=`<div class="tp-guide-title">How to Export from Apple Health</div>
+    <div class="tp-guide-body">
+      1. Open <strong>Health app</strong> on iPhone<br>
+      2. Tap your <strong>profile picture</strong> (top right)<br>
+      3. Scroll down → tap <strong>Export All Health Data</strong><br>
+      4. AirDrop or save the <code>.zip</code> to your Mac<br>
+      5. Double-click the zip to extract — open the <code>apple_health_export</code> folder<br>
+      6. Drop <code>export.xml</code> here<br><br>
+      <strong>Tip:</strong> Export covers your full history. The parser runs in a background thread so the tracker stays usable while it works. A full export typically takes 30–90 seconds depending on file size.
+    </div>`;
+  wrap.appendChild(ahGuide);
+
+
+  if(state.hrv.length||state.restingHR.length){
+    const clearAHBtn=el("button","btn-danger","Clear Apple Health Data");
+    clearAHBtn.style.marginTop="12px";
+    clearAHBtn.onclick=()=>{
+      if(confirm("Clear all Apple Health HRV, resting HR, and VO2 max data? Runs imported from AH will also be removed.")){
+        state.hrv=[]; state.restingHR=[]; state.vo2max=[];
+        state.runs=state.runs.filter(r=>r.source!=="ah");
+        store.set(SK.hrv,[]); store.set(SK.rhr,[]); store.set(SK.vo2,[]); store.set(SK.runs,state.runs);
+        state.ahStatus={state:"success",msg:"Apple Health data cleared"};
+        renderAll();
+      }
+    };
+    const rw2=el("div","",`<div style="text-align:center"></div>`);
+    rw2.querySelector("div").appendChild(clearAHBtn);
+    wrap.appendChild(rw2);
+  }
+
+  return wrap;
+}
+
+// ── Apple Health Parser ────────────────────────────────────────────────────
+function handleAppleHealth(file){
+  if(file.name.endsWith('.zip')){
+    state.ahStatus={state:"error",msg:"Please unzip the export first, then drop export.xml here.",detail:"On Mac: double-click the .zip → open apple_health_export → drag export.xml"};
+    renderAll(); return;
+  }
+  const sizeMB=(file.size/1048576).toFixed(0);
+  state.ahStatus={state:"progress",msg:`0% — reading ${sizeMB} MB…`,detail:"Parsing in chunks. The tab may be slightly slow but won't freeze."};
+  renderAll();
+
+  const lthr=state.lthr||163;
+  const CHUNK=10*1024*1024; // 10 MB per chunk (main-thread friendly)
+  const TAIL=65536;         // 64 KB overlap between chunks
+  const total=file.size;
+  const runs=[],hrv=[],restingHR=[],vo2max=[];
+  let offset=0, tail='';
+
+  function parseChunk(text){
+    // ── Running Workouts ────────────────────────────────────────────────
+    let pos=0;
+    while(true){
+      const start=text.indexOf('<Workout ',pos);
+      if(start===-1) break;
+      const end=text.indexOf('</Workout>',start);
+      if(end===-1) break; // incomplete block — tail carries it to next chunk
+      const block=text.slice(start,end+10);
+      pos=end+10;
+      if(!block.includes('HKWorkoutActivityTypeRunning')) continue;
+      const ga=attr=>{const m=block.match(new RegExp('\\b'+attr+'="([^"]+)"'));return m?m[1]:null;};
+      const startDate=ga('startDate'); if(!startDate) continue;
+      const date=startDate.slice(0,10);
+      const dur=parseFloat(ga('duration')||'0');
+      const durUnit=ga('durationUnit')||'min';
+      const dist=parseFloat(ga('totalDistance')||'0');
+      const distUnit=ga('totalDistanceUnit')||'km';
+      if(dur<=0||dist<=0) continue;
+      const durationMin=durUnit==='min'?dur:dur/60;
+      const distM=distUnit==='km'?Math.round(dist*1000):Math.round(dist);
+      if(distM<500) continue;
+      const durationSec=durationMin*60;
+      const pace=Math.round(durationSec/(distM/1000));
+      if(pace<180||pace>600) continue;
+      const hrStat=block.match(/WorkoutStatistics[^>]*HKQuantityTypeIdentifierHeartRate[^>]*average="([^"]+)"[^>]*(?:maximum="([^"]+)")?/);
+      const avgHr=hrStat?Math.round(parseFloat(hrStat[1])):0;
+      const maxHr=hrStat&&hrStat[2]?Math.round(parseFloat(hrStat[2])):0;
+      if(!avgHr||avgHr<60||avgHr>220) continue;
+      const IF_=avgHr/lthr;
+      const tss=Math.round((durationSec*IF_*IF_)/3600*100*10)/10;
+      const source=ga('sourceName')||'Apple Watch';
+      runs.push({date,title:'Running · '+source.split(' ')[0],min:Math.round(durationMin*10)/10,dist:distM,pace,avgHr,maxHr,tss,source:'ah'});
+    }
+    // ── HRV ─────────────────────────────────────────────────────────────
+    let m;
+    const hRe=/<Record[^>]*HKQuantityTypeIdentifierHeartRateVariabilitySDNN[^>]*startDate="([^"]{10})[^"]*"[^>]*value="([^"]+)"/g;
+    while((m=hRe.exec(text))!==null){const v=Math.round(parseFloat(m[2])*10)/10;if(v>0)hrv.push({date:m[1],value:v});}
+    // ── Resting HR ───────────────────────────────────────────────────────
+    const rRe=/<Record[^>]*HKQuantityTypeIdentifierRestingHeartRate[^>]*startDate="([^"]{10})[^"]*"[^>]*value="([^"]+)"/g;
+    while((m=rRe.exec(text))!==null){const v=Math.round(parseFloat(m[2]));if(v>30&&v<120)restingHR.push({date:m[1],value:v});}
+    // ── VO2 Max ──────────────────────────────────────────────────────────
+    const vRe=/<Record[^>]*HKQuantityTypeIdentifierVO2Max[^>]*startDate="([^"]{10})[^"]*"[^>]*value="([^"]+)"/g;
+    while((m=vRe.exec(text))!==null){const v=Math.round(parseFloat(m[2])*10)/10;if(v>20)vo2max.push({date:m[1],value:v});}
+  }
+
+  function finish(){
+    // Deduplicate (64 KB overlap means boundary records appear in two consecutive chunks)
+    const dR={},dH={},dRH={},dV={};
+    runs.forEach(r=>dR[r.date+'-'+r.dist]=r);
+    hrv.forEach(h=>dH[h.date]=h);
+    restingHR.forEach(h=>dRH[h.date]=h);
+    vo2max.forEach(h=>dV[h.date]=h);
+    const newRuns=Object.values(dR).sort((a,b)=>a.date.localeCompare(b.date));
+    const newHrv=Object.values(dH).sort((a,b)=>a.date.localeCompare(b.date));
+    const newRhr=Object.values(dRH).sort((a,b)=>a.date.localeCompare(b.date));
+    const newVo2=Object.values(dV).sort((a,b)=>a.date.localeCompare(b.date));
+
+    const mergeR=(ex,inc)=>{const m={};ex.forEach(r=>m[`${r.date}-${r.dist}`]=r);inc.forEach(r=>m[`${r.date}-${r.dist}`]=r);return Object.values(m).sort((a,b)=>a.date.localeCompare(b.date));};
+    const mr=mergeR(state.runs,newRuns);
+    const addedR=mr.length-state.runs.length;
+    state.runs=mr; store.set(SK.runs,mr);
+    const mergeArr=(ex,inc)=>{const m={};ex.forEach(x=>m[x.date]=x);inc.forEach(x=>m[x.date]=x);return Object.values(m).sort((a,b)=>a.date.localeCompare(b.date));};
+    state.hrv=mergeArr(state.hrv,newHrv); store.set(SK.hrv,state.hrv);
+    state.restingHR=mergeArr(state.restingHR,newRhr); store.set(SK.rhr,state.restingHR);
+    state.vo2max=mergeArr(state.vo2max,newVo2); store.set(SK.vo2,state.vo2max);
+
+    const parts=[];
+    if(addedR>0) parts.push(`${addedR} new run${addedR!==1?"s":""}`);
+    if(newHrv.length>0) parts.push(`${newHrv.length} HRV readings`);
+    if(newRhr.length>0) parts.push(`${newRhr.length} resting HR readings`);
+    if(newVo2.length>0) parts.push(`${newVo2.length} VO2 max values`);
+    if(!parts.length) parts.push("No new data found — check that the file is export.xml from Apple Health");
+    const latestVo2=state.vo2max.length?state.vo2max[state.vo2max.length-1]:null;
+    state.ahStatus={state:"success",msg:parts.join(", "),detail:`Total: ${state.runs.length} runs · ${state.hrv.length} HRV · ${state.restingHR.length} resting HR${latestVo2?` · VO2 max ${latestVo2.value} mL/min/kg`:""}`};
+    renderAll();
+  }
+
+  function readNextChunk(){
+    if(offset>=total){ finish(); return; }
+    const slice=file.slice(offset,Math.min(offset+CHUNK,total));
+    const fr=new FileReader();
+    fr.onload=e=>{
+      try{
+        const text=tail+e.target.result;
+        parseChunk(text);
+        tail=text.length>TAIL?text.slice(-TAIL):text;
+        offset+=CHUNK;
+        const pct=Math.min(99,Math.round(offset/total*100));
+        // Update progress label directly (avoids full re-render mid-parse)
+        const pEl=document.getElementById("ah-progress-msg");
+        if(pEl) pEl.textContent=`${pct}% — ${runs.length} runs found so far…`;
+        // Yield to browser between chunks so UI can breathe
+        setTimeout(readNextChunk,0);
+      }catch(err){
+        state.ahStatus={state:"error",msg:"Parse error: "+err.message};
+        renderAll();
+      }
+    };
+    fr.onerror=()=>{
+      state.ahStatus={state:"error",msg:"File read error at byte "+offset+". Try re-exporting the file."};
+      renderAll();
+    };
+    fr.readAsText(slice);
+  }
+
+  // Kick off first chunk after a short delay so "0% reading…" renders first
+  setTimeout(readNextChunk,80);
+}
+
+
+// ── HR & Load ──────────────────────────────────────────────────────────────
+function getZone(hr, lthr){
+  const p=hr/lthr;
+  if(p<0.85) return 1;
+  if(p<0.90) return 2;
+  if(p<0.95) return 3;
+  if(p<1.00) return 4;
+  return 5;
+}
+
+function computeLoad(){
+  const allActs=[
+    ...state.runs.map(r=>({date:r.date,tss:r.tss||0})),
+    ...state.other.map(r=>({date:r.date,tss:r.tss||0}))
+  ].sort((a,b)=>a.date.localeCompare(b.date));
+  if(!allActs.length) return {ctl:0,atl:0,tsb:0,history:[]};
+  const daily={};
+  allActs.forEach(a=>{ daily[a.date]=(daily[a.date]||0)+a.tss; });
+  const kCTL=1-Math.exp(-1/42), kATL=1-Math.exp(-1/7);
+  let ctl=0,atl=0;
+  const history=[];
+  const start=new Date(START_DATE), now=new Date();
+  const days=Math.ceil((now-start)/864e5)+1;
+  for(let i=0;i<days;i++){
+    const d=new Date(start); d.setDate(d.getDate()+i);
+    const ds=d.toISOString().split("T")[0];
+    const tss=daily[ds]||0;
+    ctl=ctl+kCTL*(tss-ctl);
+    atl=atl+kATL*(tss-atl);
+    history.push({date:ds.slice(5),ctl:Math.round(ctl*10)/10,atl:Math.round(atl*10)/10,tsb:Math.round((ctl-atl)*10)/10});
+  }
+  return {ctl:Math.round(ctl),atl:Math.round(atl),tsb:Math.round(ctl-atl),history};
+}
+
+function scatterChart(pts, width, height, formatX, formatY){
+  const pad={l:52,r:12,t:10,b:28};
+  const W=width-pad.l-pad.r, H=height-pad.t-pad.b;
+  if(!pts.length) return `<svg width="${width}" height="${height}"></svg>`;
+  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  const minX=Math.min(...xs),maxX=Math.max(...xs),rangeX=maxX-minX||1;
+  const minY=Math.min(...ys),maxY=Math.max(...ys),rangeY=maxY-minY||1;
+  const bX=rangeX*0.12, bY=rangeY*0.12;
+  const x1=minX-bX,x2=maxX+bX,y1=minY-bY,y2=maxY+bY;
+  const toX=v=>pad.l+(v-x1)/(x2-x1)*W;
+  const toY=v=>pad.t+H-(v-y1)/(y2-y1)*H;
+  let svg=`<svg class="chart" width="${width}" height="${height}" style="display:block">`;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+(H/4)*i;
+    const val=y2-(y2-y1)*i/4;
+    svg+=`<line x1="${pad.l}" y1="${y}" x2="${pad.l+W}" y2="${y}" stroke="#e2e8f0" stroke-width="1"/>`;
+    svg+=`<text x="${pad.l-4}" y="${y+4}" text-anchor="end" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">${formatY?formatY(Math.round(val)):Math.round(val)}</text>`;
+  }
+  for(let i=0;i<=4;i++){
+    const xv=x1+(x2-x1)*i/4;
+    const xp=toX(xv);
+    svg+=`<text x="${xp.toFixed(1)}" y="${pad.t+H+16}" text-anchor="middle" font-size="10" fill="#7a8ba3" font-family="JetBrains Mono,monospace">${formatX?formatX(Math.round(xv)):Math.round(xv)}</text>`;
+  }
+  pts.forEach(p=>{
+    const cx=toX(p.x).toFixed(1), cy=toY(p.y).toFixed(1);
+    svg+=`<circle cx="${cx}" cy="${cy}" r="6" fill="${p.color}" opacity="0.82" stroke="#fff" stroke-width="1.5"/>`;
+  });
+  svg+=`</svg>`;
+  return svg;
+}
+
+function buildHeartRate(){
+  const wrap=el("div");
+  const lthr=state.lthr||163;
+  const zoneCard=el("div","card");
+  zoneCard.innerHTML=`<div class="card-label">Heart Rate Zones — Based on LTHR</div>`;
+  const lthrRow=el("div","lthr-row");
+  lthrRow.innerHTML=`<span style="font-size:14px;font-weight:600;color:#334155">Your LTHR:</span>
+    <input id="lthrInput" type="number" value="${lthr}" min="100" max="220"/>
+    <span style="font-size:13px;color:#7a8ba3">Lactate Threshold Heart Rate — the HR you can hold for ~1hr at race effort</span>
+    <button class="save-btn" id="lthrSave">Save</button>`;
+  zoneCard.appendChild(lthrRow);
+  const zones=[
+    {z:1,pct:"< 85%",   lo:0,              hi:Math.round(lthr*0.85)-1, purpose:"Active recovery, aerobic base",     when:"Warm-up / cool-down"},
+    {z:2,pct:"85–89%",  lo:Math.round(lthr*0.85),hi:Math.round(lthr*0.90)-1,purpose:"Aerobic endurance, fat burning — HYROX target zone",when:"Long easy runs"},
+    {z:3,pct:"90–94%",  lo:Math.round(lthr*0.90),hi:Math.round(lthr*0.95)-1,purpose:"Tempo — lactate clearance, sustained effort",when:"Moderate runs"},
+    {z:4,pct:"95–99%",  lo:Math.round(lthr*0.95),hi:Math.round(lthr*1.00)-1,purpose:"Threshold — raises LT, race-hard effort",when:"Threshold intervals"},
+    {z:5,pct:"≥ 100%",  lo:Math.round(lthr*1.00),hi:"Max",                  purpose:"VO₂max / anaerobic — brief bursts only",when:"Sprint intervals"},
+  ];
+  // Avg pace per zone from logged runs
+  const zonePaces={};
+  [1,2,3,4,5].forEach(z=>{
+    const zRuns=state.runs.filter(r=>getZone(r.avgHr,lthr)===z);
+    if(zRuns.length) zonePaces[z]=Math.round(zRuns.reduce((s,r)=>s+r.pace,0)/zRuns.length);
+  });
+
+  let tbl=`<table class="zone-table"><tr><th>Zone</th><th>Name</th><th>% LTHR</th><th>BPM Range</th><th>Your Pace</th><th>When to Use</th></tr>`;
+  zones.forEach(z=>{
+    const zp=zonePaces[z.z];
+    const paceStr=zp?`${fmt(zp)}/km`:`<span style="color:#c9d5e3">—</span>`;
+    tbl+=`<tr>
+      <td><span class="zone-badge" style="background:${ZC[z.z]}">Z${z.z}</span></td>
+      <td style="font-weight:600">${ZN[z.z]}</td>
+      <td style="font-family:'JetBrains Mono',monospace;color:#7a8ba3">${z.pct}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700">${z.lo}–${z.hi} bpm</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${ZC[z.z]}">${paceStr}</td>
+      <td style="font-size:13px;color:#334155;font-style:italic">${z.when}</td>
+    </tr>`;
+  });
+  tbl+=`</table>`;
+  zoneCard.innerHTML+=tbl;
+  wrap.appendChild(zoneCard);
+  const rs=getRunStats();
+  const hrCard=el("div","card");
+  hrCard.innerHTML=`<div class="card-label">Avg HR vs Running Pace — Per Run</div>`;
+  if(rs.sorted.length){
+    const zCount=[0,0,0,0,0,0];
+    rs.sorted.forEach(r=>zCount[getZone(r.avgHr,lthr)]++);
+    const distRow=el("div");
+    distRow.style.cssText="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;align-items:center";
+    distRow.innerHTML=`<span style="font-size:13px;color:#7a8ba3">${rs.sorted.length} runs</span>`+
+      [1,2,3,4,5].map(z=>`<span style="font-size:13px"><span class="zone-badge" style="background:${ZC[z]}">Z${z}</span> ${zCount[z]}</span>`).join("");
+    hrCard.appendChild(distRow);
+    const pts=rs.sorted.map(r=>({x:r.pace, y:r.avgHr, color:ZC[getZone(r.avgHr,lthr)]}));
+    const scWrap=el("div","chart-wrap");
+    scWrap.innerHTML=scatterChart(pts,Math.min(860,scWrap.offsetWidth||860),220,fmt,v=>`${v} bpm`);
+    scWrap.innerHTML+=`<div style="display:flex;gap:16px;justify-content:center;margin-top:8px;font-size:12px;color:${C.dim}">
+      ${[1,2,3,4,5].map(z=>`<span><span style="color:${ZC[z]}">●</span> Z${z} ${ZN[z]}</span>`).join("")}
+      <span style="margin-left:12px">X-axis = pace/km &nbsp;·&nbsp; Y-axis = avg HR</span>
+    </div>`;
+    hrCard.appendChild(scWrap);
+    const recent=rs.sorted.slice(-10);
+    const tblWrap=el("div");
+    tblWrap.style.cssText="margin-top:14px;overflow-x:auto";
+    let rt=`<table class="zone-table"><tr><th>Date</th><th>Run</th><th>Pace/km</th><th>Avg HR</th><th>% LTHR</th><th>Zone</th></tr>`;
+    recent.forEach(r=>{
+      const z=getZone(r.avgHr,lthr);
+      const pct=Math.round(r.avgHr/lthr*100);
+      rt+=`<tr>
+        <td style="font-family:'JetBrains Mono',monospace;color:#7a8ba3;font-size:13px">${r.date.slice(5)}</td>
+        <td style="font-weight:600">${r.title}</td>
+        <td style="font-family:'JetBrains Mono',monospace;color:${C.run};font-weight:700">${fmt(r.pace)}</td>
+        <td style="font-family:'JetBrains Mono',monospace;color:${C.hr};font-weight:700">${r.avgHr} bpm</td>
+        <td style="font-family:'JetBrains Mono',monospace;color:#7a8ba3">${pct}%</td>
+        <td><span class="zone-badge" style="background:${ZC[z]}">Z${z} ${ZN[z]}</span></td>
+      </tr>`;
+    });
+    rt+=`</table>`;
+    tblWrap.innerHTML=rt;
+    hrCard.appendChild(tblWrap);
+  } else {
+    hrCard.innerHTML+=`<div class="empty">No runs logged yet</div>`;
+  }
+  wrap.appendChild(hrCard);
+  setTimeout(()=>{
+    const li=document.getElementById("lthrInput");
+    const ls=document.getElementById("lthrSave");
+    if(ls) ls.onclick=()=>{const v=parseInt(li.value);if(v>100&&v<220){state.lthr=v;store.set("hyrox-lthr-v1",v);renderAll();}};
+  },0);
+
+  // ── Apple Health Recovery Metrics ─────────────────────────────────────────
+  if(state.hrv.length||state.restingHR.length||state.vo2max.length){
+    const recCard=el("div","card");
+    recCard.innerHTML=`<div class="card-label">Apple Watch — Recovery Metrics</div>`;
+
+    if(state.hrv.length){
+      const latestHrv=state.hrv.slice(-30);
+      const avgHrv=Math.round(latestHrv.reduce((s,x)=>s+x.value,0)/latestHrv.length);
+      const hrvHdr=el("div");
+      hrvHdr.style.cssText="display:flex;align-items:baseline;gap:8px;margin-bottom:6px";
+      hrvHdr.innerHTML=`<span style="font-size:12px;font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-transform:uppercase;letter-spacing:1.5px">HRV (SDNN)</span><span style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${C.success}">${state.hrv[state.hrv.length-1].value}<span style="font-size:13px"> ms</span></span><span style="font-size:12px;color:${C.dim}">latest · 30-day avg ${avgHrv} ms</span>`;
+      recCard.appendChild(hrvHdr);
+      const hrvWrap=el("div");
+      const last90hrv=state.hrv.slice(-90);
+      hrvWrap.innerHTML=lineChart(last90hrv,"date",[{key:"value",color:C.success,width:2,r:2}],null,860,110,null,false);
+      recCard.appendChild(hrvWrap);
+    }
+
+    if(state.restingHR.length){
+      const lastRhr=state.restingHR[state.restingHR.length-1];
+      const rhrHdr=el("div");
+      rhrHdr.style.cssText="display:flex;align-items:baseline;gap:8px;margin-top:14px;margin-bottom:6px";
+      rhrHdr.innerHTML=`<span style="font-size:12px;font-family:'JetBrains Mono',monospace;color:#7a8ba3;text-transform:uppercase;letter-spacing:1.5px">Resting Heart Rate</span><span style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${C.hr}">${lastRhr.value}<span style="font-size:13px"> bpm</span></span><span style="font-size:12px;color:${C.dim}">as of ${lastRhr.date}</span>`;
+      recCard.appendChild(rhrHdr);
+      const rhrWrap=el("div");
+      const last90rhr=state.restingHR.slice(-90);
+      rhrWrap.innerHTML=lineChart(last90rhr,"date",[{key:"value",color:C.hr,width:2,r:2}],null,860,100,null,false);
+      recCard.appendChild(rhrWrap);
+    }
+
+    if(state.vo2max.length){
+      const latestVo2=state.vo2max[state.vo2max.length-1];
+      const vo2Note=latestVo2.value>=52?"Excellent — elite endurance range":latestVo2.value>=45?"Good — strong aerobic engine":latestVo2.value>=38?"Average — room to build":latestVo2.value>=30?"Below avg — prioritize aerobic base":"Needs work";
+      const vo2Clr=latestVo2.value>=52?C.success:latestVo2.value>=45?C.z2:latestVo2.value>=38?C.warn:C.danger;
+      const vo2Div=el("div");
+      vo2Div.style.cssText=`margin-top:14px;display:flex;align-items:center;gap:12px;padding:10px 14px;background:${vo2Clr}10;border-radius:7px;border-left:3px solid ${vo2Clr}`;
+      vo2Div.innerHTML=`<div><div style="font-size:11px;font-family:'JetBrains Mono',monospace;color:${C.dim};text-transform:uppercase;letter-spacing:1.5px;margin-bottom:2px">VO2 Max</div><div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:${vo2Clr};line-height:1">${latestVo2.value} <span style="font-size:13px">mL/min/kg</span></div></div><div style="font-size:13px;color:#334155">${vo2Note}</div>`;
+      recCard.appendChild(vo2Div);
+    }
+
+    wrap.appendChild(recCard);
+  } else {
+    const noAhCard=el("div","card");
+    noAhCard.style.cssText="border:1px dashed #c9d5e3;background:#f8fafc;text-align:center;padding:20px";
+    noAhCard.innerHTML=`<div style="font-size:13px;color:#7a8ba3">No Apple Health data yet — import your export.xml on the <strong>Import</strong> tab to see HRV, resting HR, and VO2 max trends here.</div>`;
+    wrap.appendChild(noAhCard);
+  }
+
+  return wrap;
+}
+
+function buildLoad(){
+  const wrap=el("div");
+  const load=computeLoad();
+  const mfff=state.manualFFF;
+  const dCTL=mfff?mfff.ctl:load.ctl;
+  const dATL=mfff?mfff.atl:load.atl;
+  const dTSB=mfff?mfff.tsb:load.tsb;
+  const freshLabel=dTSB>=5?"Fresh & Race-Ready":dTSB>=-5?"Neutral":dTSB>=-15?"Moderate Fatigue":"High Fatigue";
+  const freshColor=dTSB>=5?C.success:dTSB>=-5?C.warn:C.danger;
+  const fffCard=el("div","card");
+  fffCard.innerHTML=`<div class="card-label">Fitness · Fatigue · Form &nbsp;<span style="font-size:11px;color:#7a8ba3;font-family:'JetBrains Mono',monospace">(CTL / ATL / TSB)${mfff?" — Manual (TP)":" — Auto-calculated from TSS"}</span></div>`;
+  const fffGrid=el("div","fff-grid");
+  [
+    {l:"Fitness (CTL)",  v:dCTL,  c:C.run,     sub:"42-day rolling load"},
+    {l:"Fatigue (ATL)",  v:dATL,  c:C.danger,  sub:"7-day rolling load"},
+    {l:"Form (TSB)",     v:(dTSB>=0?"+":"")+dTSB, c:freshColor, sub:"Fitness − Fatigue"},
+    {l:"Freshness",      v:freshLabel, c:freshColor, sub:mfff?"From TrainingPeaks":"Est. from logs", big:false},
+  ].forEach(s=>{
+    const d=el("div","stat-card");
+    d.innerHTML=`<div class="stat-label">${s.l}</div>
+      <div class="stat-val" style="color:${s.c};font-size:${s.big===false?'16px':'34px'}">${s.v}</div>
+      <div class="stat-sub">${s.sub}</div>`;
+    fffGrid.appendChild(d);
+  });
+  fffCard.appendChild(fffGrid);
+  if(load.history.length>7){
+    const hist=load.history.slice(-60);
+    const fffWrap=el("div");
+    fffWrap.innerHTML=lineChart(hist,"date",
+      [{key:"ctl",color:C.run,width:2.5,r:0},{key:"atl",color:C.danger,width:1.5,r:0,dashed:true},{key:"tsb",color:C.success,width:2,r:0}],
+      null,860,180,null,false,[{y:0,color:"#c9d5e3",label:"0"}]);
+    fffWrap.innerHTML+=`<div style="display:flex;gap:20px;justify-content:center;margin-top:6px;font-size:12px;color:${C.dim}">
+      <span>● <span style="color:${C.run}">Fitness (CTL)</span></span>
+      <span>┄ <span style="color:${C.danger}">Fatigue (ATL)</span></span>
+      <span>● <span style="color:${C.success}">Form / TSB</span></span>
+    </div>`;
+    fffCard.appendChild(fffWrap);
+  }
+  wrap.appendChild(fffCard);
+  const ovCard=el("div","card");
+  ovCard.innerHTML=`<div class="card-label">TrainingPeaks Override</div>
+    <p style="font-size:14px;color:#7a8ba3;margin-bottom:14px">Paste your current CTL, ATL, and TSB from TrainingPeaks to override the auto-calculated values.</p>`;
+  const ovForm=el("div");
+  ovForm.style.cssText="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap";
+  ovForm.innerHTML=`
+    <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#7a8ba3;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px">CTL<input id="ovCTL" type="number" placeholder="${load.ctl}" value="${mfff?mfff.ctl:''}" style="padding:7px 10px;border:1px solid #c9d5e3;border-radius:6px;width:75px;font-family:'JetBrains Mono',monospace;font-size:15px"/></label>
+    <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#7a8ba3;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px">ATL<input id="ovATL" type="number" placeholder="${load.atl}" value="${mfff?mfff.atl:''}" style="padding:7px 10px;border:1px solid #c9d5e3;border-radius:6px;width:75px;font-family:'JetBrains Mono',monospace;font-size:15px"/></label>
+    <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;color:#7a8ba3;font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:1px">TSB<input id="ovTSB" type="number" placeholder="${load.tsb}" value="${mfff?mfff.tsb:''}" style="padding:7px 10px;border:1px solid #c9d5e3;border-radius:6px;width:75px;font-family:'JetBrains Mono',monospace;font-size:15px"/></label>
+    <button class="save-btn" id="saveFFF">Save TP Values</button>
+    ${mfff?`<button class="save-btn" id="clearFFF" style="background:#7a8ba3">Use Auto-Calc</button>`:''}`;
+  ovCard.appendChild(ovForm);
+  wrap.appendChild(ovCard);
+  setTimeout(()=>{
+    const sf=document.getElementById("saveFFF");
+    if(sf) sf.onclick=()=>{
+      const ctl=parseInt(document.getElementById("ovCTL").value);
+      const atl=parseInt(document.getElementById("ovATL").value);
+      const tsb=parseInt(document.getElementById("ovTSB").value);
+      if(!isNaN(ctl)&&!isNaN(atl)&&!isNaN(tsb)){
+        state.manualFFF={ctl,atl,tsb};
+        store.set("hyrox-manualfff-v1",state.manualFFF);
+        renderAll();
+      }
+    };
+    const cf=document.getElementById("clearFFF");
+    if(cf) cf.onclick=()=>{state.manualFFF=null;store.set("hyrox-manualfff-v1",null);renderAll();};
+  },0);
+
+  // ── Training Recommendation ────────────────────────────────────────────────
+  const recCard=el("div","card");
+
+  // Overall recommendation banner
+  const isGreen  = dTSB>=5 && dCTL>=20;
+  const isYellow = (dTSB>=-10 && dTSB<5) || (dATL-dCTL)>15;
+  const isRed    = dTSB<-15 || (dATL-dCTL)>25;
+  const recColor = isRed?C.danger:isYellow?C.warn:C.success;
+  const recLabel = isRed?"Slow Down — Take a Deload":isYellow?"Maintain — Train Smart This Week":"Continue Building — Full Send";
+  const recIcon  = isRed?"⚠️":isYellow?"⚡":"✅";
+
+  const banner=el("div");
+  banner.style.cssText=`display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:8px;background:${recColor}15;border:2px solid ${recColor}40;margin-bottom:20px`;
+  banner.innerHTML=`<span style="font-size:24px">${recIcon}</span><div><div style="font-family:'Bebas Neue','Impact',sans-serif;font-size:22px;color:${recColor};letter-spacing:1px">${recLabel}</div><div style="font-size:13px;color:#7a8ba3;margin-top:2px;font-family:'JetBrains Mono',monospace">Based on CTL ${dCTL} · ATL ${dATL} · TSB ${dTSB>=0?"+":""}${dTSB}</div></div>`;
+
+  recCard.innerHTML=`<div class="card-label">Training Recommendation & Metric Guide</div>`;
+  recCard.appendChild(banner);
+
+  // Metric deep-dives
+  const metrics=[
+    {
+      label:"FITNESS (CTL — Chronic Training Load)",
+      color:C.run,
+      value:`${dCTL}`,
+      unit:"AU",
+      range:"HYROX target: 50–80 AU by race week",
+      what:"CTL is your 42-day exponentially weighted average of daily training stress. Think of it as your aerobic engine — the bigger the number, the more work your body is adapted to handling.",
+      ranges:[
+        {lo:0,  hi:24,  label:"Low",      color:C.danger,  action:"Train consistently — 5 days/wk. Keep intensity low to moderate. Focus on building the habit before adding load."},
+        {lo:25, hi:49,  label:"Building", color:C.warn,    action:"Good progress. Keep adding volume. One long run per week. Add one tempo or interval session. Don't jump more than 5–7% volume per week."},
+        {lo:50, hi:79,  label:"Strong",   color:C.success, action:"Solid base. Layer in race-specific work: negative split runs, station circuits. Maintain volume — don't sacrifice it for intensity."},
+        {lo:80, hi:999, label:"Elite",    color:C.z2,      action:"High fitness. Shift toward quality — race-pace intervals, full HYROX simulations. Begin tapering 3 weeks before race."},
+      ],
+      current:dCTL,
+    },
+    {
+      label:"FATIGUE (ATL — Acute Training Load)",
+      color:C.danger,
+      value:`${dATL}`,
+      unit:"AU",
+      range:"Healthy: within 10–20 AU above CTL during build phases",
+      what:"ATL is your 7-day rolling training stress — essentially how hard you've trained in the past week. High ATL means you're accumulating fatigue. ATL should naturally exceed CTL during hard training blocks, but the gap matters.",
+      ranges:[
+        {lo:0,   hi:dCTL-1,    label:"Below CTL", color:C.success, action:"Light week — you're recovering or deloading. Fatigue is low. Good time to do a quality session or race simulation if TSB is also positive."},
+        {lo:dCTL,hi:dCTL+19,  label:"Productive", color:C.warn,   action:"Normal build zone. Training hard but not overreaching. Monitor sleep and recovery markers. Keep easy days truly easy."},
+        {lo:dCTL+20,hi:999,   label:"High",       color:C.danger,  action:"Fatigue is spiking. Do not add more volume or intensity. Take 1–2 easy days, prioritize sleep (8+ hrs), and consider whether a deload week is needed."},
+      ],
+      current:dATL,
+    },
+    {
+      label:"FORM (TSB — Training Stress Balance)",
+      color:freshColor,
+      value:`${dTSB>=0?"+":""}${dTSB}`,
+      unit:"AU",
+      range:"Race day target: +5 to +15 (via 2–3 week taper)",
+      what:"TSB = CTL minus ATL. It tells you if you're fresh or fatigued right now. Negative means you're carrying fatigue (normal during training). Positive means you're rested and ready to perform. On race day you want TSB in the +5 to +15 range — that's what tapering achieves.",
+      ranges:[
+        {lo:10,  hi:999,  label:"Peaked",         color:C.success, action:"You're fresh and ready to race or do a hard time trial. Use this window for your best quality workout of the block or a race simulation. Don't let this sit too long — fitness decays if you don't train."},
+        {lo:5,   hi:9,    label:"Fresh",           color:C.success, action:"Great position. Push quality work this week: intervals, tempo runs, or HYROX station benchmarks. You'll hit good numbers."},
+        {lo:-5,  hi:4,    label:"Balanced",        color:C.warn,    action:"Normal training zone. Stick to your plan. No need to back off or add extra. This is where most of your training weeks should land."},
+        {lo:-15, hi:-6,   label:"Building Fatigue",color:C.warn,    action:"You're accumulating fatigue — expected in a build phase. Don't add more load. Keep easy days easy. A deload week in the next 1–2 weeks is a good idea."},
+        {lo:-999,hi:-16,  label:"Overreached",     color:C.danger,  action:"Stop adding load immediately. Take a full deload week: cut volume 30–40%, drop intensity, prioritize sleep and nutrition. Pushing through here risks injury and long-term regression."},
+      ],
+      current:dTSB,
+    },
+  ];
+
+  const metricsWrap=el("div");
+  metricsWrap.style.cssText="display:flex;flex-direction:column;gap:16px";
+
+  metrics.forEach(m=>{
+    const block=el("div");
+    block.style.cssText=`border:1px solid ${m.color}30;border-radius:10px;overflow:hidden`;
+
+    // Header
+    const hdr=el("div");
+    hdr.style.cssText=`display:flex;align-items:baseline;gap:10px;padding:12px 16px;background:${m.color}10;border-bottom:1px solid ${m.color}20`;
+    hdr.innerHTML=`<span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:${m.color}">${m.label}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:${m.color};margin-left:auto">${m.value}<span style="font-size:14px;margin-left:2px">${m.unit}</span></span>`;
+    block.appendChild(hdr);
+
+    // What it means
+    const body=el("div");
+    body.style.cssText="padding:12px 16px";
+    const whatDiv=el("div");
+    whatDiv.style.cssText="font-size:13px;color:#334155;line-height:1.7;margin-bottom:12px";
+    whatDiv.textContent=m.what;
+    body.appendChild(whatDiv);
+
+    // Range target
+    const rangeNote=el("div");
+    rangeNote.style.cssText=`font-family:'JetBrains Mono',monospace;font-size:11px;color:${m.color};margin-bottom:10px`;
+    rangeNote.textContent=`📍 ${m.range}`;
+    body.appendChild(rangeNote);
+
+    // Find active range
+    const active=m.ranges.find(r=>m.current>=r.lo&&m.current<=r.hi)||m.ranges[m.ranges.length-1];
+    const actionBox=el("div");
+    actionBox.style.cssText=`padding:10px 14px;border-radius:7px;background:${active.color}12;border-left:3px solid ${active.color}`;
+    actionBox.innerHTML=`<div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${active.color};text-transform:uppercase;letter-spacing:1px;margin-bottom:5px">Your status: ${active.label}</div><div style="font-size:13px;color:#334155;line-height:1.65">${active.action}</div>`;
+    body.appendChild(actionBox);
+
+    block.appendChild(body);
+    metricsWrap.appendChild(block);
+  });
+
+  recCard.appendChild(metricsWrap);
+  wrap.appendChild(recCard);
+
+  return wrap;
+}
+
+
+// ── Training Plan ──────────────────────────────────────────────────────────
+function buildTrainingPlan(){
+  const wrap=el("div");
+  const today=new Date(); today.setHours(0,0,0,0);
+  const raceDate=new Date("2026-11-20"); raceDate.setHours(0,0,0,0);
+
+  // ── Project CTL/ATL to race day using planned TSS ─────────────────────────
+  const baseLoad=computeLoad();
+  const mfff=state.manualFFF;
+  let ctl=mfff?mfff.ctl:baseLoad.ctl;
+  let atl=mfff?mfff.atl:baseLoad.atl;
+  const kCTL=1/42, kATL=1/7;
+
+  // Build a date→plannedTSS map for all future plan days
+  const planTSSMap={};
+  PLAN_WEEKS.forEach(w=>{
+    w.days.forEach(d=>{
+      if(d.tss>0) planTSSMap[d.date]=d.tss;
+    });
+  });
+
+  // Simulate forward day by day to race day
+  const projection=[];
+  let cur=new Date(today);
+  let simCTL=ctl, simATL=atl;
+  while(cur<=raceDate){
+    const ds=cur.toISOString().slice(0,10);
+    const tss=planTSSMap[ds]||0;
+    simCTL=simCTL+(tss-simCTL)*kCTL;
+    simATL=simATL+(tss-simATL)*kATL;
+    const tsb=Math.round(simCTL-simATL);
+    projection.push({date:ds,tss,ctl:Math.round(simCTL),atl:Math.round(simATL),tsb});
+    cur.setDate(cur.getDate()+1);
+  }
+  const raceDayProj=projection[projection.length-1];
+
+  // ── Race Readiness Banner ─────────────────────────────────────────────────
+  const rdCard=el("div","card");
+  const rdTSB=raceDayProj.tsb;
+  const rdCTL=raceDayProj.ctl;
+  const rdColor=rdTSB>=5&&rdTSB<=15?C.success:rdTSB>15||rdTSB<0?C.warn:C.accent;
+  const rdLabel=rdTSB>=5&&rdTSB<=15?"On Track — Race-day TSB in target window":rdTSB>15?"May be undertraining — TSB will be very high":rdTSB<0?"Risk — TSB projected negative on race day":"Close — adjust taper to hit +5–+15 TSB";
+  rdCard.innerHTML=`<div class="card-label">Projected Race Readiness — Nov 20, 2026</div>`;
+  const rdBanner=el("div");
+  rdBanner.style.cssText=`display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px`;
+  [
+    {l:"Projected CTL",v:rdCTL,c:C.run,sub:"Race-day fitness"},
+    {l:"Projected ATL",v:raceDayProj.atl,c:C.danger,sub:"Race-day fatigue"},
+    {l:"Projected TSB",v:(rdTSB>=0?"+":"")+rdTSB,c:rdColor,sub:"Target: +5 to +15"},
+    {l:"Weeks to Race",v:Math.ceil((raceDate-today)/(7*86400000)),c:C.accent,sub:"From today"},
+  ].forEach(s=>{
+    const d=el("div","stat-card");
+    d.innerHTML=`<div class="stat-label">${s.l}</div><div class="stat-val" style="color:${s.c};font-size:28px">${s.v}</div><div class="stat-sub">${s.sub}</div>`;
+    rdBanner.appendChild(d);
+  });
+  rdCard.appendChild(rdBanner);
+  const rdAlert=el("div");
+  rdAlert.style.cssText=`padding:10px 14px;border-radius:7px;background:${rdColor}12;border-left:3px solid ${rdColor};font-size:13px;color:#334155`;
+  rdAlert.innerHTML=`<span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${rdColor};font-size:11px;text-transform:uppercase;letter-spacing:1px">Assessment: </span>${rdLabel}`;
+  rdCard.appendChild(rdAlert);
+  wrap.appendChild(rdCard);
+
+  // ── Projected CTL/ATL/TSB curve ──────────────────────────────────────────
+  const curveCard=el("div","card");
+  curveCard.innerHTML=`<div class="card-label">CTL · ATL · TSB Projection to Race Day (if plan followed)</div>`;
+  // Sample every 3 days for chart performance
+  const chartProj=projection.filter((_,i)=>i%3===0||i===projection.length-1);
+  const svgWrap=el("div");
+  svgWrap.innerHTML=lineChart(chartProj,"date",
+    [{key:"ctl",color:C.run,width:2.5,r:0},{key:"atl",color:C.danger,width:1.5,r:0,dashed:true},{key:"tsb",color:C.success,width:2,r:0}],
+    null,860,180,null,false,[{y:0,color:"#c9d5e3",label:"0"},{y:5,color:C.success+"66",label:"TSB +5"},{y:15,color:C.success+"33",label:"TSB +15"}]);
+  svgWrap.innerHTML+=`<div style="display:flex;gap:20px;justify-content:center;margin-top:6px;font-size:12px;color:${C.dim}">
+    <span>● <span style="color:${C.run}">Fitness (CTL)</span></span>
+    <span>┄ <span style="color:${C.danger}">Fatigue (ATL)</span></span>
+    <span>● <span style="color:${C.success}">Form (TSB)</span></span>
+    <span style="color:${C.dim}">· Shaded band = ideal race-day TSB zone</span>
+  </div>`;
+  curveCard.appendChild(svgWrap);
+  wrap.appendChild(curveCard);
+
+  // ── Session type color key + legend ──────────────────────────────────────
+  const typeColors={easy:C.z2,long:C.run,tempo:C.accent,interval:C.tss,racepace:"#e63946",sim:"#7c3aed",strength:"#64748b",station:C.hr,rest:"#e8eef6",race:"#e07b3c",other:C.dim,mobility:"#94a3b8"};
+  const typeLabels={easy:"Easy Run",long:"Long Run",tempo:"Tempo",interval:"Intervals",racepace:"Race Pace",sim:"Hyrox Sim",strength:"Strength",station:"Station Work",rest:"REST",race:"RACE DAY",mobility:"Mobility"};
+
+  // ── Weekly calendar (future weeks first, past weeks collapsed) ────────────
+  const calCard=el("div","card");
+  calCard.innerHTML=`<div class="card-label">34-Week Training Calendar — Planned Sessions & TSS</div>`;
+
+  // Filter toggle
+  const filterRow=el("div");
+  filterRow.style.cssText="display:flex;gap:6px;margin-bottom:14px;align-items:center";
+  const filterLabel=el("span");
+  filterLabel.style.cssText=`font-size:11px;font-family:'JetBrains Mono',monospace;color:${C.dim};margin-right:4px;text-transform:uppercase;letter-spacing:1px`;
+  filterLabel.textContent="Show:";
+  filterRow.appendChild(filterLabel);
+  [["upcoming","Upcoming"],["completed","Completed"],["all","All 34 Weeks"]].forEach(([val,lbl])=>{
+    const btn=el("button");
+    const isActive=state.calFilter===val;
+    btn.style.cssText=`padding:4px 12px;border-radius:20px;border:1px solid ${isActive?C.accent:C.border};background:${isActive?C.accent:"transparent"};color:${isActive?"#fff":C.dim};font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;font-weight:${isActive?"700":"400"}`;
+    btn.textContent=lbl;
+    btn.onclick=()=>{state.calFilter=val;renderAll();};
+    filterRow.appendChild(btn);
+  });
+  calCard.appendChild(filterRow);
+
+  // Legend row
+  const legendRow=el("div");
+  legendRow.style.cssText="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px";
+  Object.entries(typeLabels).forEach(([k,v])=>{
+    if(k==='other') return;
+    const chip=el("span");
+    chip.style.cssText=`font-size:11px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:10px;background:${typeColors[k]}22;color:${typeColors[k]};border:1px solid ${typeColors[k]}44`;
+    chip.textContent=v;
+    legendRow.appendChild(chip);
+  });
+  calCard.appendChild(legendRow);
+
+  const visibleWeeks=PLAN_WEEKS.filter(w=>{
+    const ws=new Date(w.startDate); ws.setHours(0,0,0,0);
+    const we=new Date(ws); we.setDate(we.getDate()+6);
+    if(state.calFilter==="completed") return we<today;
+    if(state.calFilter==="upcoming") return we>=today;
+    return true;
+  });
+  visibleWeeks.forEach(w=>{
+    const wStart=new Date(w.startDate); wStart.setHours(0,0,0,0);
+    const wEnd=new Date(wStart); wEnd.setDate(wEnd.getDate()+6);
+    const isPast=wEnd<today;
+    const isCurrent=wStart<=today&&today<=wEnd;
+
+    const wWrap=el("div");
+    wWrap.style.cssText=`margin-bottom:8px;border:1px solid ${isCurrent?C.accent:C.border};border-radius:8px;overflow:hidden;${isPast?"opacity:0.55":""}`;
+
+    // Week header
+    const phaseColors={"Phase 1":"#3b82f6","Phase 2":"#f59e0b","Phase 3":"#e07b3c","Phase 4":"#2a9d5c","Race Week":"#e04e6a"};
+    const phaseColor=phaseColors[w.phase]||C.dim;
+    const hdr=el("div");
+    hdr.style.cssText=`display:flex;align-items:center;gap:10px;padding:8px 14px;background:${isCurrent?C.accent+"18":isPast?"#f8fafc":"#f4f6fa"};border-bottom:1px solid ${isCurrent?C.accent+"30":C.border}`;
+    hdr.innerHTML=`
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:${isCurrent?C.accent:C.dim}">W${w.week}</span>
+      <span style="font-size:11px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:10px;background:${phaseColor}22;color:${phaseColor}">${w.phase}</span>
+      <span style="font-size:12px;color:#7a8ba3;font-family:'JetBrains Mono',monospace">${w.startDate.slice(5).replace("-","/")} – ${new Date(wStart.getTime()+5*86400000).toISOString().slice(5,10).replace("-","/")}</span>
+      ${isCurrent?`<span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:${C.accent};font-weight:700">◀ THIS WEEK</span>`:""}
+      <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${C.tss}">${w.weeklyTSS} TSS</span>`;
+    wWrap.appendChild(hdr);
+
+    // Days grid
+    const grid=el("div");
+    grid.style.cssText="display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:#e8eef6";
+    w.days.forEach(d=>{
+      const isToday=d.date===today.toISOString().slice(0,10);
+      const tc=typeColors[d.type]||C.dim;
+      const cell=el("div");
+      cell.style.cssText=`padding:8px 10px;background:${isToday?C.accent+"18":d.type==="rest"?"#fafbfc":"#fff"};min-height:72px`;
+      const dLabel=el("div");
+      dLabel.style.cssText=`font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${isToday?C.accent:C.dim};margin-bottom:4px`;
+      dLabel.textContent=d.day+(isToday?" ◀":"");
+      const badge=el("div");
+      badge.style.cssText=`display:inline-block;font-size:10px;font-family:'JetBrains Mono',monospace;padding:1px 6px;border-radius:8px;background:${tc}18;color:${tc};border:1px solid ${tc}33;margin-bottom:4px`;
+      badge.textContent=typeLabels[d.type]||d.type;
+      const desc=el("div");
+      desc.style.cssText="font-size:11px;color:#334155;line-height:1.4";
+      desc.textContent=d.desc.replace(/\n/g," · ").slice(0,60)+(d.desc.length>60?"…":"");
+      const tssSpan=el("div");
+      tssSpan.style.cssText=`font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${d.tss>0?C.tss:C.dim};margin-top:3px`;
+      tssSpan.textContent=d.tss>0?`${d.tss} TSS`:"—";
+      cell.appendChild(dLabel); cell.appendChild(badge); cell.appendChild(desc); cell.appendChild(tssSpan);
+      grid.appendChild(cell);
+    });
+    wWrap.appendChild(grid);
+    calCard.appendChild(wWrap);
+  });
+  wrap.appendChild(calCard);
+  return wrap;
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+init();
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body></html>
