@@ -253,7 +253,7 @@ svg.chart{overflow:visible}
 </div>
 
 <div id="mobile-nav"></div>
-<div id="more-drawer" style="display:none"></div>
+<div id="more-drawer"></div>
 <div class="content" id="content"></div>
 
 <script>
@@ -350,6 +350,12 @@ function init(){
   const savedRhr = store.get(SK.rhr); if(savedRhr&&savedRhr.length) state.restingHR = savedRhr;
   const savedVo2 = store.get(SK.vo2); if(savedVo2&&savedVo2.length) state.vo2max = savedVo2;
   const savedSims = store.get(SK.sims); if(savedSims&&savedSims.length) state.sims = savedSims;
+  // Close "More" drawer when tapping outside it
+  document.addEventListener('click',e=>{
+    const drawer=document.getElementById('more-drawer');
+    const nav=document.getElementById('mobile-nav');
+    if(drawer&&nav&&!drawer.contains(e.target)&&!nav.contains(e.target)) drawer.className='';
+  });
   // Load plans — seed with the hardcoded default plan always present
   const defaultPlan = {id:"default", name:"Dallas HYROX 2026", raceDate:"2026-11-20", createdAt:"2026-03-30", cfg:null, weeks:null}; // weeks:null = use hardcoded PLAN_WEEKS
   const savedPlans = store.get(SK.plans);
@@ -383,10 +389,10 @@ function switchPlan(id){
 // Bottom nav items: [label, icon, tab]
 const MOBILE_NAV=[
   ["Home","🏠","Dashboard"],
-  ["Plan","📋","Training Plan"],
+  ["Splits","📊","Race Splits"],
+  ["Running","🏃","Running"],
   ["Stations","🏋️","Stations"],
-  ["Sims","🏃","Sim Log"],
-  ["Import","☁️","Import"],
+  ["Plan","📋","Training Plan"],
 ];
 
 function renderMobileNav(){
@@ -424,8 +430,6 @@ function renderMobileNav(){
     btn.onclick=()=>{drawerEl.className="";state.tab=t;renderAll();};
     drawerEl.appendChild(btn);
   });
-  // Close drawer on outside click
-  document.onclick=(e)=>{if(!navEl.contains(e.target)&&!drawerEl.contains(e.target))drawerEl.className="";};
 }
 
 function renderAll(){
