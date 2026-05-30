@@ -129,6 +129,83 @@ svg.chart{overflow:visible}
 .lthr-row input{padding:6px 10px;border:1px solid #c9d5e3;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:14px;width:80px}
 .save-btn{padding:6px 14px;background:#e07b3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:14px}
 .save-btn:hover{background:#c96a2e}
+
+/* ── Safe area for iPhone notch / home bar ──────────────────────────────── */
+.header{padding-left:max(24px,env(safe-area-inset-left));padding-right:max(24px,env(safe-area-inset-right))}
+.content{padding-bottom:max(24px,env(safe-area-inset-bottom))}
+
+/* ── Mobile responsive ──────────────────────────────────────────────────── */
+@media (max-width: 640px){
+  /* Header */
+  .header{padding:max(14px,env(safe-area-inset-top)) 14px 0}
+  .header-top{flex-direction:column;align-items:stretch;gap:10px;margin-bottom:12px}
+  .title-block .title{font-size:30px;letter-spacing:1px}
+  .title-block .subtitle{font-size:13px;margin-top:3px}
+  .days-block{text-align:left}
+  .days-block .days-num{font-size:36px}
+  .days-block .days-label{font-size:11px}
+  /* Plan selector row: stack button + plan name */
+  #plan-selector > div{flex-direction:row;flex-wrap:wrap;gap:8px;align-items:center}
+
+  /* Tab bar: scrollable, no wrap */
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;padding-bottom:2px;gap:2px}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab-btn{white-space:nowrap;font-size:11px;padding:7px 11px;flex-shrink:0}
+
+  /* Content area */
+  .content{padding:10px}
+  .card{padding:12px 12px}
+  .card-label{font-size:10px;margin-bottom:10px}
+
+  /* Stat grid: 2 columns */
+  .stat-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .stat-val{font-size:28px}
+  .stat-sub{font-size:11px}
+
+  /* Mid row (pace chart + HR zones): stack */
+  .mid-row{grid-template-columns:1fr !important}
+
+  /* FFF grid: 2 col */
+  .fff-grid{grid-template-columns:1fr 1fr;gap:8px}
+
+  /* Charts: horizontal scroll container */
+  .chart{display:block}
+  svg.chart{max-width:none}
+  .card > div > svg, .card > svg{max-width:none}
+
+  /* Forms: single column */
+  .form-grid{grid-template-columns:1fr !important;gap:8px}
+  .log-form{padding:12px}
+  .log-form-title{font-size:14px}
+
+  /* Chart containers: scroll horizontally if wider than screen */
+  .card > div{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .card > div > svg{display:block}
+
+  /* Log table rows: allow wrapping */
+  .log-row{flex-wrap:wrap;gap:4px;padding:8px 10px}
+  .lr-name{flex:0 0 100%;font-size:13px}
+  .lr-date{font-size:11px}
+  .lr-notes{max-width:100%}
+
+  /* Zone table: compact */
+  .zone-table td,.zone-table th{padding:6px 8px;font-size:12px}
+
+  /* Calendar: 3-col day grid instead of 6 */
+  .cal-day-grid{grid-template-columns:repeat(3,1fr) !important}
+
+  /* Readiness grid: 2 col */
+  .readiness-grid{grid-template-columns:1fr 1fr}
+
+  /* Phase card week bar */
+  .phase-weeks{flex-wrap:wrap}
+
+  /* Splits segment bar: scrollable */
+  .seg-bar-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* Today's workout card */
+  .today-strip{flex-wrap:wrap;gap:4px}
+}
 </style>
 </head>
 <body>
@@ -222,6 +299,7 @@ let state = {
 };
 
 function today(){return new Date().toISOString().split("T")[0]}
+function chartW(full=860){return Math.min(full,Math.max(300,window.innerWidth-48))||full}
 function fmt(s){const m=Math.floor(s/60);return m+":"+(s%60).toString().padStart(2,"0")}
 function el(tag,cls,inner){const e=document.createElement(tag);if(cls)e.className=cls;if(inner!==undefined)e.innerHTML=inner;return e}
 
@@ -813,7 +891,7 @@ function buildDashboard(){
   }
 
   // ── 2-column mid row ──────────────────────────────────────────────────────
-  const midRow=el("div");
+  const midRow=el("div","mid-row");
   midRow.style.cssText="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px";
   midRow.appendChild(paceCard);
   midRow.appendChild(hrZoneCard);
@@ -844,14 +922,14 @@ function buildRunning(){
   hrCard.innerHTML=`<div class="card-label">Heart Rate — Avg vs Max</div>`;
   const hrData=rs.sorted.map(r=>({date:r.date.slice(5),avg:r.avgHr,max:r.maxHr}));
   const hrWrap=el("div");
-  hrWrap.innerHTML=lineChart(hrData,"date",[{key:"max",color:C.danger+"88",width:1.5,r:2},{key:"avg",color:C.hr,width:2,r:3}],null,860,150,null,false);
+  hrWrap.innerHTML=lineChart(hrData,"date",[{key:"max",color:C.danger+"88",width:1.5,r:2},{key:"avg",color:C.hr,width:2,r:3}],null,chartW(),150,null,false);
   hrCard.appendChild(hrWrap);
   wrap.appendChild(hrCard);
   const tssCard=el("div","card");
   tssCard.innerHTML=`<div class="card-label">Training Stress Score (TSS)</div>`;
   const tssData=rs.sorted.map(r=>({date:r.date.slice(5),tss:Math.min(r.tss,120)}));
   const tssWrap=el("div");
-  tssWrap.innerHTML=barChart(tssData,"date","tss",C.tss,860,120,null);
+  tssWrap.innerHTML=barChart(tssData,"date","tss",C.tss,chartW(),120,null);
   tssCard.appendChild(tssWrap);
   tssCard.innerHTML+=`<div style="font-size:13px;color:${C.dim};margin-top:4px;font-style:italic">TSS capped at 120 for display</div>`;
   wrap.appendChild(tssCard);
@@ -917,7 +995,7 @@ function buildRaceSplits(){
     return {name,target:s.target,actual:a,clr};
   });
   const dualWrap=el("div");
-  dualWrap.innerHTML=dualBarChart(segData,"name","target","actual",C.accent,null,860,300,fmt);
+  dualWrap.innerHTML=dualBarChart(segData,"name","target","actual",C.accent,null,chartW(),300,fmt);
   segCard.appendChild(dualWrap);
   wrap.appendChild(segCard);
 
@@ -1053,7 +1131,7 @@ function buildSimLog(){
     chartCard.appendChild(el("div","empty","Log your first simulation to see your progress chart."));
   } else {
     // Build data points for chart
-    const W=860, H=200, pad={l:64,r:60,t:14,b:32};
+    const W=chartW(), H=200, pad={l:64,r:60,t:14,b:32};
     const CW=W-pad.l-pad.r, CH=H-pad.t-pad.b;
 
     // Time range: from first event (or 8 weeks before race) to race
@@ -1398,7 +1476,7 @@ function buildNewPlan(){
   pgCard.innerHTML=`<div class="card-label">Generate a New Training Plan</div>
   <div style="font-size:12px;color:#7a8ba3;margin-bottom:16px">Fill in the details below to generate a personalised Hyrox training plan. It will be saved alongside any existing plans and set as active.</div>`;
 
-  const pgForm=el("div");
+  const pgForm=el("div","form-grid");
   pgForm.style.cssText="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px";
 
   function field(label,id,html){
@@ -1843,7 +1921,7 @@ function buildHeartRate(){
       recCard.appendChild(hrvHdr);
       const hrvWrap=el("div");
       const last90hrv=state.hrv.slice(-90);
-      hrvWrap.innerHTML=lineChart(last90hrv,"date",[{key:"value",color:C.success,width:2,r:2}],null,860,110,null,false);
+      hrvWrap.innerHTML=lineChart(last90hrv,"date",[{key:"value",color:C.success,width:2,r:2}],null,chartW(),110,null,false);
       recCard.appendChild(hrvWrap);
     }
 
@@ -1855,7 +1933,7 @@ function buildHeartRate(){
       recCard.appendChild(rhrHdr);
       const rhrWrap=el("div");
       const last90rhr=state.restingHR.slice(-90);
-      rhrWrap.innerHTML=lineChart(last90rhr,"date",[{key:"value",color:C.hr,width:2,r:2}],null,860,100,null,false);
+      rhrWrap.innerHTML=lineChart(last90rhr,"date",[{key:"value",color:C.hr,width:2,r:2}],null,chartW(),100,null,false);
       recCard.appendChild(rhrWrap);
     }
 
@@ -1910,7 +1988,7 @@ function buildLoad(){
     const fffWrap=el("div");
     fffWrap.innerHTML=lineChart(hist,"date",
       [{key:"ctl",color:C.run,width:2.5,r:0},{key:"atl",color:C.danger,width:1.5,r:0,dashed:true},{key:"tsb",color:C.success,width:2,r:0}],
-      null,860,180,null,false,[{y:0,color:"#c9d5e3",label:"0"}]);
+      null,chartW(),180,null,false,[{y:0,color:"#c9d5e3",label:"0"}]);
     fffWrap.innerHTML+=`<div style="display:flex;gap:20px;justify-content:center;margin-top:6px;font-size:12px;color:${C.dim}">
       <span>● <span style="color:${C.run}">Fitness (CTL)</span></span>
       <span>┄ <span style="color:${C.danger}">Fatigue (ATL)</span></span>
@@ -2130,7 +2208,7 @@ function buildTrainingPlan(){
   const svgWrap=el("div");
   svgWrap.innerHTML=lineChart(chartProj,"date",
     [{key:"ctl",color:C.run,width:2.5,r:0},{key:"atl",color:C.danger,width:1.5,r:0,dashed:true},{key:"tsb",color:C.success,width:2,r:0}],
-    null,860,180,null,false,[{y:0,color:"#c9d5e3",label:"0"},{y:5,color:C.success+"66",label:"TSB +5"},{y:15,color:C.success+"33",label:"TSB +15"}]);
+    null,chartW(),180,null,false,[{y:0,color:"#c9d5e3",label:"0"},{y:5,color:C.success+"66",label:"TSB +5"},{y:15,color:C.success+"33",label:"TSB +15"}]);
   svgWrap.innerHTML+=`<div style="display:flex;gap:20px;justify-content:center;margin-top:6px;font-size:12px;color:${C.dim}">
     <span>● <span style="color:${C.run}">Fitness (CTL)</span></span>
     <span>┄ <span style="color:${C.danger}">Fatigue (ATL)</span></span>
