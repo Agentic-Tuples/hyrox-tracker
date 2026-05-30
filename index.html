@@ -136,10 +136,9 @@ svg.chart{overflow:visible}
 
 /* ── Mobile bottom nav ───────────────────────────────────────────────────── */
 #mobile-nav{display:none}
-#more-drawer{display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;
-  background:#fff;border-top:1px solid #c9d5e3;padding:12px 16px;
-  padding-bottom:max(12px,env(safe-area-inset-bottom));
-  display:none;flex-wrap:wrap;gap:8px;box-shadow:0 -4px 20px rgba(0,0,0,0.12)}
+#more-drawer{display:none;position:sticky;top:0;left:0;right:0;z-index:200;
+  background:#fff;border-bottom:1px solid #c9d5e3;padding:12px 16px;
+  flex-wrap:wrap;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,0.08)}
 #more-drawer.open{display:flex}
 
 /* ── Mobile responsive ───────────────────────────────────────────────────── */
@@ -158,16 +157,13 @@ svg.chart{overflow:visible}
   /* Tab bar: hidden on mobile — replaced by bottom nav */
   .tabs{display:none}
 
-  /* Content: make room for bottom nav */
-  .content{padding-bottom:calc(70px + max(12px,env(safe-area-inset-bottom)))}
-
-  /* Bottom nav */
+  /* Nav bar sits between header and content */
   #mobile-nav{
-    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:100;
-    background:#fff;border-top:2px solid #c9d5e3;
-    padding:6px 4px max(8px,env(safe-area-inset-bottom));
+    display:flex;position:sticky;top:0;z-index:100;
+    background:#fff;border-bottom:2px solid #c9d5e3;
+    padding:4px 4px 4px;
     justify-content:space-around;align-items:stretch;
-    box-shadow:0 -2px 12px rgba(0,0,0,0.10);
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
   }
   .mnav-btn{
     display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -256,9 +252,9 @@ svg.chart{overflow:visible}
   </div>
 </div>
 
-<div class="content" id="content"></div>
 <div id="mobile-nav"></div>
 <div id="more-drawer" style="display:none"></div>
+<div class="content" id="content"></div>
 
 <script>
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -913,7 +909,7 @@ function buildDashboard(){
   const chartData=rs.sorted.map(r=>({date:r.date.slice(5),pace:r.pace}));
   const chartWrap=el("div","chart-wrap");
   chartWrap.style.width="100%";
-  chartWrap.innerHTML=lineChart(chartData,"date",[{key:"pace",color:C.run,width:2.5,r:3}],null,420,130,fmt,false,[{y:320,color:C.accent,label:"5:20 goal"}]);
+  chartWrap.innerHTML=lineChart(chartData,"date",[{key:"pace",color:C.run,width:2.5,r:3}],null,chartW(420),130,fmt,false,[{y:320,color:C.accent,label:"5:20 goal"}]);
   paceCard.appendChild(chartWrap);
   paceCard.innerHTML+=`<div style="display:flex;gap:16px;justify-content:center;margin-top:6px;font-size:11px;color:${C.dim}"><span>● <span style="color:${C.run}">Pace/km</span></span><span>┄ <span style="color:${C.accent}">5:20 goal</span></span></div>`;
 
@@ -946,11 +942,11 @@ function buildDashboard(){
     legendWrap.style.cssText="display:flex;flex-direction:column;gap:5px";
     [1,2,3,4,5].forEach(z=>{
       const row=el("div");
-      row.style.cssText="display:grid;grid-template-columns:14px 100px 1fr 55px 72px;align-items:center;gap:6px";
+      row.style.cssText="display:grid;grid-template-columns:14px minmax(60px,100px) 1fr 55px 60px;align-items:center;gap:4px;min-width:0";
       const dot=el("span");
       dot.style.cssText=`display:inline-block;width:8px;height:8px;border-radius:2px;background:${ZC[z]}`;
       const name=el("span");
-      name.style.cssText="font-size:12px;font-weight:600;color:#334155";
+      name.style.cssText="font-size:12px;font-weight:600;color:#334155;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
       name.textContent=`Z${z} ${ZN[z]}`;
       const bar=el("div");
       bar.style.cssText="height:5px;background:#e8eef6;border-radius:3px;overflow:hidden";
